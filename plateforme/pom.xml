@@ -29,6 +29,11 @@
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <version>2.2.21</version>
+                <configuration>
+                    <compilerPlugins>
+                        <plugin>lombok</plugin>
+                    </compilerPlugins>
+                </configuration>
                 <executions>
                     <execution>
                         <id>compile</id>
