@@ -15,10 +15,11 @@ Projet réalisé par :
 Ce dépot comprend les différents sous-projets qui le composent :
 - [plateforme](./plateforme)
 - [client](./client)
+- [editeur](./editeur)
 
 ## Mise en place
 
-- Mettre en place Apache Kafka via Docker
+- Mettre en place Apache Kafka et MySQL via Docker
 ```bash
 docker compose up -d
 ```
@@ -26,6 +27,8 @@ docker compose up -d
 ## Utilisation
 
 - Accès à Kafka UI : [http://localhost:8080/](http://localhost:8080/)
+
+- Accès à PhpMySql : [http://localhost:9090/](http://localhost:9090/)
 
 ## Détails techniques
 

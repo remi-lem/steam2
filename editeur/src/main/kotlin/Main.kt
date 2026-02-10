@@ -1,16 +1,23 @@
 package org.steam2.editeur
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-fun main() {
-    val name = "Kotlin"
-    //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-    // to see how IntelliJ IDEA suggests fixing it.
-    println("Hello, " + name + "!")
+import com.googlecode.lanterna.screen.TerminalScreen
+import com.googlecode.lanterna.terminal.DefaultTerminalFactory
+import jakarta.persistence.Persistence
+import org.steam2.editeur.application.MenuPrincipal
+import org.steam2.entites.EditeurDAO
 
-    for (i in 1..5) {
-        //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-        // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        println("i = $i")
-    }
+fun main() {
+    println("Bienvenue dans l'application de l'éditeur !")
+
+    // DAOs
+    val emf = Persistence.createEntityManagerFactory("steam2-editeur")
+    val editeurDAO = EditeurDAO(emf)
+
+    // Préparation de l'interface
+    val terminal = DefaultTerminalFactory().setTerminalEmulatorTitle("Steam2").createTerminal()
+    val screen = TerminalScreen(terminal)
+    screen.startScreen()
+
+    // Lancement de l'interface
+    MenuPrincipal(editeurDAO).afficher(screen)
 }

@@ -20,7 +20,8 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
 #      KAFKA_LOG_DIRS: /srv/kafka-logs
 #    volumes:
-#      - ./kafka-logs:/srv/kafka-logs
+#      # données de kafka (local uniquement)
+#      - kafka-logs:/srv/kafka-logs
 
   kafka-ui:
     container_name: kafka-ui
@@ -28,8 +29,44 @@ services:
     depends_on:
       - kafka
     ports:
-      - 8080:8080
+      - "8080:8080"
     environment:
       DYNAMIC_CONFIG_ENABLED: 'true'
     volumes:
       - ./kui/config.yml:/etc/kafkaui/dynamic_config.yaml
+
+  mysql:
+    image: mysql:lts
+    container_name: mysql
+    restart: always
+    environment:
+      # Mot de passe utilisé lors du développement, à ne pas utiliser en production
+      MYSQL_ROOT_PASSWORD: oR3N2M603y4SyfE7BV86
+      MYSQL_DATABASE: steam2
+    ports:
+      # Attention port différent de d'habitude pour éviter les conflits si un serveur mysql tourne déjà
+      - "3366:3306"
+    volumes:
+      # initialisation de la base (premier lancement uniquement)
+      # attention il faut supprimer le volume steam2_mysql_data pour forcer son lancement
+      - ./database/init:/docker-entrypoint-initdb.d
+      # données de la BD (local uniquement)
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: oR3N2M603y4SyfE7BV86
+      PMA_ARBITRARY: 0
+    ports:
+      - "9090:80"
+
+volumes:
+  mysql_data:
+#  kafka-logs:
