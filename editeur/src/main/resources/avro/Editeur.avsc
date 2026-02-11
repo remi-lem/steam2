@@ -1,0 +1,28 @@
+{
+  "type": "record",
+  "name": "EditeurAvro",
+  "namespace": "org.steam2.avro",
+  "fields": [
+    {
+      "name": "id",
+      "type": ["null", "int"],
+      "default": null
+    },
+    {
+      "name": "typeEditeur",
+      "type": {
+        "type": "enum",
+        "name": "TypeEditeurAvro",
+        "symbols": ["ENTREPRISE", "INDEPENDANT"]
+      }
+    },
+    {
+      "name": "nom",
+      "type": "string"
+    },
+    {
+      "name": "password",
+      "type": "string"
+    }
+  ]
+}

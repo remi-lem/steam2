@@ -29,12 +29,11 @@ class MenuPrincipal(val editeurDAO: EditeurDAO) {
         panel.addComponent(txtLogin)
 
         panel.addComponent(Label("Mot de passe:"))
-        val txtPassword = TextBox().setMask('*') // Sécurité des données
+        val txtPassword = TextBox().setMask('*')
         panel.addComponent(txtPassword)
 
         panel.addComponent(EmptySpace())
 
-        // Bouton OK qui ferme la fenêtre et stocke le résultat
         val window = BasicWindow("Authentification")
         panel.addComponent(Button("OK") {
             // On vérifie le mot de passe
