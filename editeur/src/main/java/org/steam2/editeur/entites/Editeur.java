@@ -1,9 +1,11 @@
-package org.steam2.entites;
+package org.steam2.editeur.entites;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.steam2.editeur.entities.type.TypeEditeur;
+
+import java.util.List;
 
 @Entity
 @Table(name = "editeur")
@@ -24,4 +26,7 @@ public class Editeur {
 
     @Column(name = "password")
     private String password;
+
+    @OneToMany(mappedBy = "editeur")
+    private List<JeuVideo> jeuxPublies;
 }

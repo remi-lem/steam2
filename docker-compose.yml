@@ -18,10 +18,10 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-#      KAFKA_LOG_DIRS: /srv/kafka-logs
-#    volumes:
-#      # données de kafka (local uniquement)
-#      - kafka-logs:/srv/kafka-logs
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      # données de kafka (local uniquement)
+      - kafka-logs:/var/lib/kafka/data
 
   schema-registry:
     image: confluentinc/cp-schema-registry:8.0.3
@@ -40,6 +40,7 @@ services:
     image: provectuslabs/kafka-ui:latest
     depends_on:
       - kafka
+      - schema-registry
     ports:
       - "8080:8080"
     environment:
@@ -81,4 +82,4 @@ services:
 
 volumes:
   mysql_data:
-#  kafka-logs:
+  kafka-logs:

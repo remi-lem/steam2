@@ -6,7 +6,11 @@
 
   <persistence-unit name="steam2-editeur">
 
-    <class>org.steam2.entites.Editeur</class>
+    <class>org.steam2.editeur.entites.Editeur</class>
+    <class>org.steam2.editeur.entites.JeuVideo</class>
+    <class>org.steam2.editeur.entites.Genre</class>
+    <class>org.steam2.editeur.entites.VersionJeu</class>
+    <class>org.steam2.editeur.entites.Commentaire</class>
 
 
     <properties>
