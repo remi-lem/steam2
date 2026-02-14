@@ -44,7 +44,7 @@
                 <executions>
                     <execution>
                         <id>compile</id>
-                        <phase>process-sources</phase>
+                        <phase>compile</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
@@ -125,14 +125,6 @@
                 <version>1.6.0</version>
                 <configuration>
                     <mainClass>org.steam2.client.MainKt</mainClass>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>25</source>
-                    <target>25</target>
                 </configuration>
             </plugin>
         </plugins>
