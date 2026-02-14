@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="creerCommentaires" type="JUnit" factoryName="JUnit">
+    <module name="editeur" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="org.steam2.editeur.daos.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <option name="PACKAGE_NAME" value="org.steam2.editeur.daos" />
+    <option name="MAIN_CLASS_NAME" value="org.steam2.editeur.daos.CommentaireTest" />
+    <option name="METHOD_NAME" value="creerCommentaires" />
+    <option name="TEST_OBJECT" value="method" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

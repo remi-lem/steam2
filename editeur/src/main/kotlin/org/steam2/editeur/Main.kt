@@ -79,7 +79,14 @@ fun main() = runBlocking {
     // Fin du programme : On ferme la fenêtre et on arrête le service de récupération des commentaires
 
     log.info("On quitte l'application")
+    //hibernate
+    emf.close()
+    //kafka
+    producer.flush()
+    producer.close()
+    //fenetre
     screen.close()
+    //service
     serviceRecuperationCommentaires.stop()
     log.info("Attente de la fermeture du service de récupération des commentaires...")
     jobService.join()
