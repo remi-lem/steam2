@@ -1,0 +1,19 @@
+{
+  "type": "record",
+  "name": "Commentaire",
+  "namespace": "org.steam2.editeur.entites",
+  "fields": [
+    {
+      "name": "jeuId",
+      "type": "int"
+    },
+    {
+      "name": "date",
+      "type": "long"
+    },
+    {
+      "name": "commentaire",
+      "type": "string"
+    }
+  ]
+}
