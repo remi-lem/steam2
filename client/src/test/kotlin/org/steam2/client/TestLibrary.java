@@ -4,6 +4,9 @@ import com.github.javafaker.Faker;
 import com.github.javafaker.Name;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.steam2.client.entites.Bibliotheque;
+import org.steam2.client.entites.JeuVideo;
+import org.steam2.client.entites.Joueur;
 import org.steam2.client.exceptions.GameNotOwnedException;
 
 import java.time.Duration;
@@ -16,30 +19,30 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class TestLibrary {
 
     Faker faker;
-    GameLibrary library;
+    Bibliotheque library;
 
     @BeforeEach
     public void setupEach(){
         faker = new Faker();
         Name name = faker.name();
-        library = new GameLibrary(new Player(name.fullName(),name.lastName(), name.firstName(), faker.date().between(Date.from(Instant.EPOCH), Date.from(Instant.now()))));
+        library = new Bibliotheque(new Joueur(name.fullName(),name.lastName(), name.firstName(), faker.date().between(Date.from(Instant.EPOCH), Date.from(Instant.now()))));
     }
 
     @Test
     public void testExceptionWhenPlayingUnownedGame(){
-        Game game = new Game("a");
+        JeuVideo game = new JeuVideo("a");
         assertThrows(GameNotOwnedException.class, () -> library.playGame(game, Duration.ofMinutes(50)));
     }
 
     @Test
     public void testExceptionWhenGettingPlayedHours(){
-        Game game = new Game("a");
+        JeuVideo game = new JeuVideo("a");
         assertThrows(GameNotOwnedException.class, () -> library.getPlayedHoursForGame(game));
     }
 
     @Test
     public void testWithOneSession(){
-        Game game = new Game("a");
+        JeuVideo game = new JeuVideo("a");
         library.add(game);
         Duration time = Duration.ofMinutes(1);
         library.playGame(game,time);
@@ -48,7 +51,7 @@ public class TestLibrary {
 
     @Test
     public void testMultipleSessions(){
-        Game game = new Game("a");
+        JeuVideo game = new JeuVideo("a");
         library.add(game);
         library.playGame(game,Duration.ofMinutes(1));
         library.playGame(game,Duration.ofMinutes(2));
