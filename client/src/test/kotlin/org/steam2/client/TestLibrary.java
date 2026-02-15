@@ -1,7 +1,10 @@
+package org.steam2.client;
+
 import com.github.javafaker.Faker;
 import com.github.javafaker.Name;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.steam2.client.exceptions.GameNotOwnedException;
 
 import java.time.Duration;
 import java.time.Instant;

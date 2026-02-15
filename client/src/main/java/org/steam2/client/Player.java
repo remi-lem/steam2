@@ -1,15 +1,16 @@
+package org.steam2.client;
+
 import lombok.Getter;
 
 import java.util.Date;
 
-
+@Getter
 public class Player {
     String username;
     String firstName;
     String lastName;
     Date birthDay;
     final GameLibrary library;
-    @Getter
     private float wallet;
 
     public Player(String username, String lastName, String firstName, Date birthDay) {

@@ -1,3 +1,5 @@
+package org.steam2.client;
+
 import com.github.javafaker.Faker;
 import com.github.javafaker.Name;
 import org.junit.jupiter.api.BeforeAll;

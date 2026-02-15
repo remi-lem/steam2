@@ -1,4 +1,4 @@
-package org.steam2.client
+package org.steam2.client.org.steam2.client
 
 import org.slf4j.LoggerFactory
 

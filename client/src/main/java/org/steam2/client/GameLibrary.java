@@ -1,3 +1,5 @@
+package org.steam2.client;
+
 import lombok.Getter;
 
 import java.time.Duration;
@@ -22,9 +24,9 @@ public class GameLibrary extends ArrayList<Game> {
      * Computes and returns the total played time for the game of the library
      * @param game the game to compute the total time
      * @return the total played time
-     * @throws GameNotOwnedException if the game isn't in the library
+     * @throws org.steam2.client.exceptions.GameNotOwnedException if the game isn't in the library
      */
-    public Duration getPlayedHoursForGame(Game game) throws GameNotOwnedException {
+    public Duration getPlayedHoursForGame(Game game) throws org.steam2.client.exceptions.GameNotOwnedException {
         checkOwnership(game);
         Duration playerHours = Duration.ZERO;
         for (GameSession session : gameSessions){
@@ -40,9 +42,9 @@ public class GameLibrary extends ArrayList<Game> {
      * @param game the game played
      * @param duration the playing time
      * @return the new game session
-     * @throws GameNotOwnedException if the game is not in the library
+     * @throws org.steam2.client.exceptions.GameNotOwnedException if the game is not in the library
      */
-    public GameSession playGame(Game game, Duration duration) throws GameNotOwnedException {
+    public GameSession playGame(Game game, Duration duration) throws org.steam2.client.exceptions.GameNotOwnedException {
         checkOwnership(game);
         GameSession session = new GameSession(game,duration, Date.from(Instant.now()));
         gameSessions.add(session);
@@ -52,11 +54,11 @@ public class GameLibrary extends ArrayList<Game> {
     /**
      * Check if the game is in the library, throws an exception if not
      * @param game the game to check
-     * @throws GameNotOwnedException if the game if not in the library
+     * @throws org.steam2.client.exceptions.GameNotOwnedException if the game if not in the library
      */
-    private void checkOwnership(Game game) throws GameNotOwnedException{
+    private void checkOwnership(Game game) throws org.steam2.client.exceptions.GameNotOwnedException {
         if (!contains(game)){
-            throw new GameNotOwnedException(owner, game);
+            throw new org.steam2.client.exceptions.GameNotOwnedException(owner, game);
         }
     }
 }
