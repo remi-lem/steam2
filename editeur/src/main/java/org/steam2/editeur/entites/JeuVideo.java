@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.steam2.editeur.entities.type.Plateforme;
 
-import java.util.List;
+import java.util.Comparator;import java.util.List;
 
 @Entity
 @Table(name = "jeu")
@@ -41,4 +41,8 @@ public class JeuVideo {
 
     @OneToMany(mappedBy = "jeu")
     private List<Commentaire> commentaires;
-}
+
+    @Override
+    public String toString() {
+        return this.nom;
+    }}

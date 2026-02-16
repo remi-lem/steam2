@@ -9,7 +9,7 @@ CREATE TABLE editeur (
 
 CREATE TABLE jeu (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    editeur_id INT,
+    editeur_id INT NOT NULL,
     nom VARCHAR(50) NOT NULL UNIQUE,
     plateforme VARCHAR(50) NOT NULL,
     CONSTRAINT fk_jeu_editeur_id
@@ -35,7 +35,7 @@ CREATE TABLE jeu_genre (
 CREATE TABLE version_jeu (
     id INT AUTO_INCREMENT PRIMARY KEY,
     jeu_id INT NOT NULL,
-    commentaire_editeur VARCHAR(1024),
+    commentaire_editeur VARCHAR(1024) NOT NULL,
     generation INT NOT NULL,
     revision INT NOT NULL DEFAULT 0,
     correction INT NOT NULL DEFAULT 0,
@@ -46,13 +46,29 @@ CREATE TABLE version_jeu (
 CREATE TABLE commentaire (
     id INT AUTO_INCREMENT PRIMARY KEY,
     commentaire VARCHAR(1024) NOT NULL,
-    date DATETIME,
+    date DATETIME NOT NULL,
     jeu_id INT NOT NULL,
     CONSTRAINT fk_commentaire_jeu
         FOREIGN KEY (jeu_id) REFERENCES jeu(id)
 );
 
+CREATE TABLE incident (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    details VARCHAR(1024) NOT NULL,
+    date DATETIME NOT NULL,
+    jeu_id INT NOT NULL,
+    CONSTRAINT fk_incident_jeu
+        FOREIGN KEY (jeu_id) REFERENCES jeu(id)
+);
 
+CREATE TABLE detail_modif_patch (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    type_modification VARCHAR(50) NOT NULL,
+    commentaire VARCHAR(50) NOT NULL,
+    version_id INT NOT NULL,
+    CONSTRAINT fk_version_detail_modif
+        FOREIGN KEY (version_id) REFERENCES version_jeu(id)
+);
 
 
 

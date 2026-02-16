@@ -5,6 +5,7 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.steam2.editeur.entites.Commentaire
 import java.time.LocalDateTime
@@ -12,11 +13,12 @@ import java.time.ZoneId
 import java.util.Properties
 
 internal class CommentaireTest {
-    @Test
+    //@Test
+    @RepeatedTest(100)
     fun creerCommentaires() {
         // Récupération du paramétrage Kafka
         val props = Properties()
-        val inputStream = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka.properties")
+        val inputStream = Thread.currentThread().contextClassLoader.getResourceAsStream("kafkaCommentaires.properties")
         props.load(inputStream)
         val topic = props.getProperty("topic.name")
 

@@ -11,11 +11,13 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-private const val DELAI_ATTENTE: Long = 5000 // 5 secondes
-
 class RecupererCommentaires(private val consumer: KafkaConsumer<String, GenericRecord>,
                             private val jeuVideoDAO: JeuVideoDAO,
                             private val commentaireDAO: CommentaireDAO) {
+
+    companion object {
+        const val DELAI_ATTENTE: Long = 5000 // 5 secondes
+    }
 
     private val log = LoggerFactory.getLogger(RecupererCommentaires::class.java)
 
@@ -32,13 +34,13 @@ class RecupererCommentaires(private val consumer: KafkaConsumer<String, GenericR
 
                 for (record in records) {
                     log.info("Nouveau commentaire reçu : ${record.value()}")
-                    val genericIncident: GenericRecord = record.value()
+                    val genericCommentaire: GenericRecord = record.value()
 
-                    val jeuId = genericIncident.get("jeuId") as Int
-                    val timestamp = genericIncident.get("date") as Long
+                    val jeuId = genericCommentaire.get("jeuId") as Int
+                    val timestamp = genericCommentaire.get("date") as Long
                     val date = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
 
-                    val commentaireTxt = genericIncident.get("commentaire").toString()
+                    val commentaireTxt = genericCommentaire.get("commentaire").toString()
 
                     val commentaireObj = Commentaire()
                     commentaireObj.jeu = jeuVideoDAO.getJeuVideoById(jeuId)

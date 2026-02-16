@@ -2,6 +2,7 @@ services:
   kafka:
     image: apache/kafka:latest
     container_name: kafka
+    restart: unless-stopped
     ports:
       - "9092:9092"
     environment:
@@ -26,6 +27,7 @@ services:
   schema-registry:
     image: confluentinc/cp-schema-registry:8.0.3
     container_name: schema-registry
+    restart: unless-stopped
     depends_on:
       - kafka
     ports:
@@ -38,6 +40,7 @@ services:
   kafka-ui:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
+    restart: unless-stopped
     depends_on:
       - kafka
       - schema-registry
@@ -51,7 +54,7 @@ services:
   mysql:
     image: mysql:lts
     container_name: mysql
-    restart: always
+    restart: unless-stopped
     environment:
       # Mot de passe utilisé lors du développement, à ne pas utiliser en production
       MYSQL_ROOT_PASSWORD: oR3N2M603y4SyfE7BV86
@@ -69,7 +72,7 @@ services:
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: phpmyadmin
-    restart: always
+    restart: unless-stopped
     depends_on:
       - mysql
     environment:

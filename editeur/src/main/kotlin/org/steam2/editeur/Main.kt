@@ -16,11 +16,13 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import org.steam2.editeur.daos.CommentaireDAO
 import org.steam2.editeur.application.Menus
+import org.steam2.editeur.application.RecupererIncidents
 import org.steam2.editeur.entites.Editeur
 import org.steam2.editeur.daos.EditeurDAO
 import org.steam2.editeur.daos.GenreDAO
+import org.steam2.editeur.daos.IncidentDAO
 import org.steam2.editeur.daos.JeuVideoDAO
-import org.steam2.editeur.exceptions.LoginException
+import org.steam2.editeur.daos.VersionDAO
 import java.util.*
 
 private val log = LoggerFactory.getLogger("Main")
@@ -33,63 +35,86 @@ fun main() = runBlocking {
     val editeurDAO = EditeurDAO(emf)
     val jeuVideoDAO = JeuVideoDAO(emf)
     val commentaireDAO = CommentaireDAO(emf)
+    val incidentDAO = IncidentDAO(emf)
     val genreDAO = GenreDAO(emf)
+    val versionDAO = VersionDAO(emf)
 
     // Récupération du paramétrage Kafka
-    val props = Properties()
-    val inputStream = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka.properties")
-    props.load(inputStream)
-    val topic = props.getProperty("topic.name")
+    val propsCommentaires = Properties()
+    val inputStreamCommentaires = Thread.currentThread().contextClassLoader.getResourceAsStream("kafkaCommentaires.properties")
+    propsCommentaires.load(inputStreamCommentaires)
+    val topicCommentaires = propsCommentaires.getProperty("topic.name")
+
+    val propsIncidents = Properties()
+    val inputStreamIncidents = Thread.currentThread().contextClassLoader.getResourceAsStream("kafkaIncidents.properties")
+    propsIncidents.load(inputStreamIncidents)
+    val topicIncidents = propsIncidents.getProperty("topic.name")
 
     // Kafka
-    val producer = KafkaProducer<String, GenericRecord>(props)
-    val consumer = KafkaConsumer<String, GenericRecord>(props)
-    consumer.subscribe(listOf(topic))
+    val producerCommentaires = KafkaProducer<String, GenericRecord>(propsCommentaires)
+    val consumerCommentaires = KafkaConsumer<String, GenericRecord>(propsCommentaires)
+    consumerCommentaires.subscribe(listOf(topicCommentaires))
+
+    val consumerIncidents = KafkaConsumer<String, GenericRecord>(propsIncidents)
+    consumerIncidents.subscribe(listOf(topicIncidents))
 
     // Préparation de l'interface (fenêtre)
     val terminal = DefaultTerminalFactory().setTerminalEmulatorTitle("Steam2 - Editeur").createTerminal()
     val screen = TerminalScreen(terminal)
     screen.startScreen()
     val gui = MultiWindowTextGUI(screen)
-    val menus = Menus(gui, editeurDAO, commentaireDAO, jeuVideoDAO, genreDAO)
+    val menus = Menus(gui, editeurDAO, commentaireDAO, incidentDAO, jeuVideoDAO, genreDAO, versionDAO)
 
     log.info("L'application est prête")
 
-    // Récupération en arrière plan des rapports d'incidents
+    // Récupération en arrière plan des commentaires et rapports d'incidents
     // On utilise ici les Co Routines de Kotlin, ce qui équivaut à un pool de thread en Java
-    val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    val serviceRecuperationCommentaires = RecupererCommentaires(consumer, jeuVideoDAO, commentaireDAO)
+    val serviceScopeCommentaires = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    val serviceRecuperationCommentaires = RecupererCommentaires(consumerCommentaires, jeuVideoDAO, commentaireDAO)
 
-    val jobService = launch(Dispatchers.IO) {
+    val jobServiceCommentaires = launch(Dispatchers.IO) {
         serviceRecuperationCommentaires.launch()
+    }
+
+    val serviceScopeIncidents = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    val serviceRecuperationIncidents = RecupererIncidents(consumerIncidents, jeuVideoDAO, incidentDAO)
+
+    val jobServiceIncidents = launch(Dispatchers.IO) {
+        serviceRecuperationIncidents.launch()
     }
 
     // Lancement de l'interface
     val editeur: Editeur? = menus.login()
 
     if(editeur == null) {
-        throw LoginException("Editeur non connecté")
+        log.error("Editeur est null")
+    }
+    else {
+        log.info("L'editeur ${editeur.nom} (${editeur.typeEditeur}) s'est connecté")
+
+        // Menu principal : liste d'options possibles
+        menus.mainMenu(editeur)
     }
 
-    log.info("L'editeur ${editeur.nom} s'est connecté")
-
-    // Menu principal : liste d'options possibles
-    menus.mainMenu()
-
-    // Fin du programme : On ferme la fenêtre et on arrête le service de récupération des commentaires
+    // Fin du programme : On ferme la fenêtre et on arrête les services de récupération
 
     log.info("On quitte l'application")
     //hibernate
     emf.close()
     //kafka
-    producer.flush()
-    producer.close()
+    producerCommentaires.flush()
+    producerCommentaires.close()
     //fenetre
     screen.close()
-    //service
+    //services
     serviceRecuperationCommentaires.stop()
-    log.info("Attente de la fermeture du service de récupération des commentaires...")
-    jobService.join()
+    serviceRecuperationIncidents.stop()
+    log.info("Attente de la fermeture des services de récupération des commentaires... " +
+            "(${RecupererCommentaires.DELAI_ATTENTE / 1000} secondes max)")
+    jobServiceCommentaires.join()
+    log.info("Attente de la fermeture des services de récupération des incidents... " +
+            "(${RecupererIncidents.DELAI_ATTENTE / 1000} secondes max)")
+    jobServiceIncidents.join()
 
     log.info("Merci d'avoir utilisé notre application !")
 }

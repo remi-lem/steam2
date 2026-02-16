@@ -11,6 +11,8 @@
     <class>org.steam2.editeur.entites.Genre</class>
     <class>org.steam2.editeur.entites.VersionJeu</class>
     <class>org.steam2.editeur.entites.Commentaire</class>
+    <class>org.steam2.editeur.entites.Incident</class>
+    <class>org.steam2.editeur.entites.DetailModifPatch</class>
 
 
     <properties>

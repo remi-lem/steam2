@@ -29,4 +29,9 @@ public class Editeur {
 
     @OneToMany(mappedBy = "editeur")
     private List<JeuVideo> jeuxPublies;
+
+    @Override
+    public String toString() {
+        return nom;
+    }
 }
