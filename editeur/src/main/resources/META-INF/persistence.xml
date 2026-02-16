@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+             https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+  <persistence-unit name="steam2-editeur">
+
+    <class>org.steam2.editeur.entites.Editeur</class>
+    <class>org.steam2.editeur.entites.JeuVideo</class>
+    <class>org.steam2.editeur.entites.Genre</class>
+    <class>org.steam2.editeur.entites.VersionJeu</class>
+    <class>org.steam2.editeur.entites.Commentaire</class>
+
+
+    <properties>
+      <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver" />
+      <property name="jakarta.persistence.jdbc.url"    value="jdbc:mysql://localhost:3366/steam2" />
+      <property name="jakarta.persistence.jdbc.user"   value="root" />
+      <property name="jakarta.persistence.jdbc.password" value="oR3N2M603y4SyfE7BV86" />
+<!--      <property name="hibernate.show_sql"   value="true" />-->
+      <property name="hibernate.format_sql" value="true" />
+    </properties>
+  </persistence-unit>
+</persistence>
