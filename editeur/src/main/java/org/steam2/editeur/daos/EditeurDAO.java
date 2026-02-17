@@ -8,6 +8,10 @@ import org.steam2.editeur.exceptions.LoginException;
 
 import java.util.List;
 
+/**
+ * Data Access Object faisant les accès aux entités Editeur
+ * @author remi
+ */
 public class EditeurDAO {
 
     private final EntityManagerFactory emf;
@@ -16,6 +20,13 @@ public class EditeurDAO {
         this.emf = emf;
     }
 
+    /**
+     * Authentification d'un éditeur
+     * @param nom login de l'éditeur
+     * @param hashPassword mot de passe haché
+     * @return l'éditeur identifié
+     * @author remi
+     */
     public Editeur identifier(String nom, String hashPassword) {
         try (EntityManager em = emf.createEntityManager()) {
             TypedQuery<Editeur> q = em.createQuery(
@@ -35,6 +46,19 @@ public class EditeurDAO {
             } else {
                 throw new LoginException("Mot de passe incorrect pour l'éditeur " + nom);
             }
+        }
+    }
+
+    /**
+     * Rafraichissement de l'entité en base
+     * @param editeur l'éditeur à rafraichir
+     * @author remi
+     */
+    public Editeur refresh(Editeur editeur) {
+        try (EntityManager em = emf.createEntityManager()) {
+            editeur = em.merge(editeur);
+            em.refresh(editeur);
+            return editeur;
         }
     }
 }

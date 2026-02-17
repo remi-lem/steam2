@@ -4,10 +4,12 @@ import org.steam2.editeur.application.RecupererCommentaires
 import com.googlecode.lanterna.gui2.MultiWindowTextGUI
 import com.googlecode.lanterna.screen.TerminalScreen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
+import com.mysql.cj.jdbc.AbandonedConnectionCleanupThread
 import jakarta.persistence.Persistence
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.avro.generic.GenericRecord
@@ -27,6 +29,10 @@ import java.util.*
 
 private val log = LoggerFactory.getLogger("Main")
 
+/**
+ * Fonction principale de l'application éditeur
+ * @author remi
+ */
 fun main() = runBlocking {
     log.info("Démarrage de l'application de l'éditeur")
 
@@ -72,14 +78,14 @@ fun main() = runBlocking {
     val serviceScopeCommentaires = CoroutineScope(Dispatchers.IO + SupervisorJob())
     val serviceRecuperationCommentaires = RecupererCommentaires(consumerCommentaires, jeuVideoDAO, commentaireDAO)
 
-    val jobServiceCommentaires = launch(Dispatchers.IO) {
+    val jobServiceCommentaires = serviceScopeCommentaires.launch(Dispatchers.IO) {
         serviceRecuperationCommentaires.launch()
     }
 
     val serviceScopeIncidents = CoroutineScope(Dispatchers.IO + SupervisorJob())
     val serviceRecuperationIncidents = RecupererIncidents(consumerIncidents, jeuVideoDAO, incidentDAO)
 
-    val jobServiceIncidents = launch(Dispatchers.IO) {
+    val jobServiceIncidents = serviceScopeIncidents.launch(Dispatchers.IO) {
         serviceRecuperationIncidents.launch()
     }
 
@@ -101,6 +107,7 @@ fun main() = runBlocking {
     log.info("On quitte l'application")
     //hibernate
     emf.close()
+    AbandonedConnectionCleanupThread.checkedShutdown()
     //kafka
     producerCommentaires.flush()
     producerCommentaires.close()
@@ -110,11 +117,13 @@ fun main() = runBlocking {
     serviceRecuperationCommentaires.stop()
     serviceRecuperationIncidents.stop()
     log.info("Attente de la fermeture des services de récupération des commentaires... " +
-            "(${RecupererCommentaires.DELAI_ATTENTE / 1000} secondes max)")
+            "(${RecupererCommentaires.DELAI_ATTENTE * 2 / 1000} secondes max)")
     jobServiceCommentaires.join()
+    serviceScopeCommentaires.cancel()
     log.info("Attente de la fermeture des services de récupération des incidents... " +
-            "(${RecupererIncidents.DELAI_ATTENTE / 1000} secondes max)")
+            "(${RecupererIncidents.DELAI_ATTENTE * 2 / 1000} secondes max)")
     jobServiceIncidents.join()
+    serviceScopeIncidents.cancel()
 
     log.info("Merci d'avoir utilisé notre application !")
 }

@@ -11,6 +11,10 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
+/**
+ * Service de récupération des commentaires
+ * @author remi
+ */
 class RecupererCommentaires(private val consumer: KafkaConsumer<String, GenericRecord>,
                             private val jeuVideoDAO: JeuVideoDAO,
                             private val commentaireDAO: CommentaireDAO) {

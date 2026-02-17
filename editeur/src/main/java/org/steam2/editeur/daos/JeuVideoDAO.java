@@ -2,15 +2,12 @@ package org.steam2.editeur.daos;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Version;
-import kotlin.Pair;
-import org.steam2.editeur.entites.DetailModifPatch;
 import org.steam2.editeur.entites.JeuVideo;
-import org.steam2.editeur.entites.VersionJeu;
-import org.steam2.editeur.entities.type.TypeModificationPatch;
 
-import java.util.List;
-
+/**
+ * Data Access Object faisant les accès aux entités Jeu Vidéo
+ * @author remi
+ */
 public class JeuVideoDAO {
 
     private final EntityManagerFactory emf;
@@ -19,18 +16,25 @@ public class JeuVideoDAO {
         this.emf = emf;
     }
 
-    public List<JeuVideo> getAllJeuxVideos() {
-        try (EntityManager em = emf.createEntityManager()) {
-            return em.createQuery("SELECT j FROM JeuVideo j", JeuVideo.class).getResultList();
-        }
-    }
-
+    /**
+     * Récupération d'un jeu à parirtr de son id
+     * @see org.steam2.editeur.application.RecupererIncidents
+     * @see org.steam2.editeur.application.RecupererCommentaires
+     * @param id l'identifiant du jeu
+     * @return l'entité Jeu Vidéo correspondante
+     * @author remi
+     */
     public JeuVideo getJeuVideoById(Integer id) {
         try (EntityManager em = emf.createEntityManager()) {
             return em.find(JeuVideo.class, id);
         }
     }
 
+    /**
+     * Enregistrement d'une entité Jeu Vidéo en base
+     * @param jeuVideo l'entité à persister
+     * @author remi
+     */
     public void persister(JeuVideo jeuVideo) {
         try (EntityManager em = emf.createEntityManager()) {
             em.getTransaction().begin();

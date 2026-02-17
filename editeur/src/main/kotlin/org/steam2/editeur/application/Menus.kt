@@ -29,8 +29,8 @@ import org.steam2.editeur.daos.VersionDAO
 import org.steam2.editeur.entites.Genre
 import org.steam2.editeur.entites.JeuVideo
 import org.steam2.editeur.entites.VersionJeu
-import org.steam2.editeur.entities.type.Plateforme
-import org.steam2.editeur.entities.type.TypeModificationPatch
+import org.steam2.editeur.entites.type.Plateforme
+import org.steam2.editeur.entites.type.TypeModificationPatch
 import org.steam2.editeur.exceptions.LoginException
 import java.nio.charset.StandardCharsets
 import java.time.format.DateTimeFormatter
@@ -38,6 +38,10 @@ import java.time.format.FormatStyle
 import java.util.Locale
 import java.util.Properties
 
+/**
+ * Menus de l'application editeur
+ * @author remi
+ */
 class Menus(private val gui: MultiWindowTextGUI,
             private val editeurDAO: EditeurDAO,
             private val commentaireDAO: CommentaireDAO,
@@ -49,41 +53,57 @@ class Menus(private val gui: MultiWindowTextGUI,
 
     private val log = LoggerFactory.getLogger(Menus::class.java)
 
-    private var editeurCourant: Editeur? = null
+    private lateinit var editeurCourant: Editeur
 
+    /**
+     * Menu principal de l'application (liste des options)
+     * @author remi
+     */
     fun mainMenu(editeur: Editeur) {
         var quitter = false;
 
         this.editeurCourant = editeur
 
         while(!quitter) {
-            ActionListDialogBuilder()
-                .setTitle("Menu principal - $editeurCourant")
-                .setDescription("Choisissez une action :")
-                .setCanCancel(false)
-                .addAction("Publier un jeu") {
-                    menuPublicationJeu(false)
-                }
-                .addAction("Publier un patch") {
-                    menuPublicationPatch()
-                }
-                .addAction("Publier un DLC") {
-                    menuPublicationJeu(true)
-                }
-                .addAction("Consulter les commentaires utilisateurs") {
-                    menuConsultationCommentaires()
-                }
-                .addAction("Consulter les rapports d'incidents") {
-                    menuConsultationIncidents()
-                }
-                .addAction("Quitter l'application") {
-                    quitter = true
-                }
-                .build()
-                .showDialog(gui)
+            try {
+                ActionListDialogBuilder()
+                    .setTitle("Menu principal - $editeurCourant")
+                    .setDescription("Choisissez une action :")
+                    .setCanCancel(false)
+                    .addAction("Publier un jeu") {
+                        menuPublicationJeu(false)
+                    }
+                    .addAction("Publier un patch") {
+                        menuPublicationPatch()
+                    }
+                    .addAction("Publier un DLC") {
+                        menuPublicationJeu(true)
+                    }
+                    .addAction("Consulter les commentaires utilisateurs") {
+                        menuConsultationCommentaires()
+                    }
+                    .addAction("Consulter les rapports d'incidents") {
+                        menuConsultationIncidents()
+                    }
+                    .addAction("Quitter l'application") {
+                        quitter = true
+                    }
+                    .build()
+                    .showDialog(gui)
+            } catch (e: Exception) {
+                // On catche et affiche l'erreur au lieu de bloquer l'interface
+                log.error("Erreur critique", e)
+                MessageDialog.showMessageDialog(gui, "Erreur critique", e.message)
+            }
         }
     }
 
+    /**
+     * Formulaire d'identification (login et mot de passe)
+     * Cette méthode appelle le DAO correspondant pour vérifier les identifiants fournis
+     * @return Editeur l'éditeur une fois connecté
+     * @author remi
+     */
     fun login() : Editeur? {
         var editeurConnecte: Editeur? = null
 
@@ -140,9 +160,14 @@ class Menus(private val gui: MultiWindowTextGUI,
         return editeurConnecte
     }
 
+    /**
+     * Page de consultation des commentaires écrits par les clients
+     * @param page : le numéro de la page à consulter
+     * @author remi
+     */
     fun menuConsultationCommentaires(page: Int = 0) {
         val pageSize = 10
-        val commentaires = commentaireDAO.commentaires
+        val commentaires = commentaireDAO.getCommentaires(editeurCourant.id)
         var totalPages = (commentaires.size + pageSize - 1) / pageSize
         if(totalPages == 0) totalPages = 1
 
@@ -158,14 +183,18 @@ class Menus(private val gui: MultiWindowTextGUI,
             builder.addAction("<<< PAGE PRÉCÉDENTE") { menuConsultationCommentaires(page - 1) }
         }
 
-        // Mise en forme de la date
-        val formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+        // Mise en forme des dates
+        val formatterDate = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+            .withLocale(Locale.FRENCH)
+        val formatterDateTime = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.MEDIUM)
             .withLocale(Locale.FRENCH)
 
         // contenu
         pageItems.forEach { com ->
             // date au format jj/mm/aaaa
-            val dateAffichee = com.date.format(formatter)
+            val dateAffichee = com.date.format(formatterDate)
+            val dateTimeAffichee = com.date.format(formatterDateTime)
+            val message = "Date : $dateTimeAffichee\nCommentaire : ${com.commentaire}"
 
             // Si le commentaire est long, on le coupe
             val commentaireAffiche = if (com.commentaire.length > 15) {
@@ -173,8 +202,8 @@ class Menus(private val gui: MultiWindowTextGUI,
             } else {
                 com.commentaire
             }
-            builder.addAction("${com.jeu} (${dateAffichee}) : ${commentaireAffiche}") {
-                MessageDialog.showMessageDialog(gui, "Détail", com.commentaire)
+            builder.addAction("${com.jeu} ($dateAffichee) : $commentaireAffiche") {
+                MessageDialog.showMessageDialog(gui, "Détail", message)
                 menuConsultationCommentaires(page) // On relance la page après lecture
             }
         }
@@ -190,9 +219,14 @@ class Menus(private val gui: MultiWindowTextGUI,
         builder.build().showDialog(gui)
     }
 
+    /**
+     * Page de consultation des rapports d'incidents générés par les applications clientes
+     * @param page : le numéro de la page à consulter
+     * @author remi
+     */
     fun menuConsultationIncidents(page: Int = 0) {
         val pageSize = 10
-        val incidents = incidentDAO.incidents
+        val incidents = incidentDAO.getIncidents(editeurCourant.id)
         var totalPages = (incidents.size + pageSize - 1) / pageSize
         if(totalPages == 0) totalPages = 1
 
@@ -209,15 +243,19 @@ class Menus(private val gui: MultiWindowTextGUI,
         }
 
 
-        // Mise en forme de la date
-        val formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+        // Mise en forme des dates
+        val formatterDate = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+            .withLocale(Locale.FRENCH)
+        val formatterDateTime = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.MEDIUM)
             .withLocale(Locale.FRENCH)
 
         // contenu
         pageItems.forEach { inc ->
-            val dateAffichee = inc.date.format(formatter)
-            builder.addAction("${dateAffichee} : ${inc.jeu}") {
-                MessageDialog.showMessageDialog(gui, "Détails", inc.details)
+            val dateAffichee = inc.date.format(formatterDate)
+            val dateTimeAffichee = inc.date.format(formatterDateTime)
+            val message = "Date : $dateTimeAffichee\nDétails : ${inc.details}"
+            builder.addAction("${inc.jeu} ($dateAffichee)") {
+                MessageDialog.showMessageDialog(gui, "Détails", message)
                 menuConsultationIncidents(page) // On relance la page après lecture
             }
         }
@@ -233,6 +271,11 @@ class Menus(private val gui: MultiWindowTextGUI,
         builder.build().showDialog(gui)
     }
 
+    /**
+     * Page de publication de nouveau jeu ou DLC
+     * @param isDlc booléen indiquant si l'on souhaite ajouter un jeu ou un DLC
+     * @author remi
+     */
     fun menuPublicationJeu(isDlc: Boolean) {
         val label = if(isDlc) { "DLC" } else { "jeu" }
 
@@ -246,8 +289,11 @@ class Menus(private val gui: MultiWindowTextGUI,
         var cbPlateforme: ComboBox<Plateforme>? = null
 
         if(isDlc) {
+            // Actualisation de la liste des jeux dans l'entité
+            editeurCourant = editeurDAO.refresh(editeurCourant)
+
             // jeu concerné
-            val listeJeux = jeuVideoDAO.allJeuxVideos
+            val listeJeux = editeurCourant.jeuxPublies
             if (listeJeux.isEmpty()) {
                 MessageDialog.showMessageDialog(gui, "Erreur", "Aucun jeu n'est enregistré. Impossible de publier un DLC.")
                 return
@@ -302,7 +348,7 @@ class Menus(private val gui: MultiWindowTextGUI,
             } else {
                 // jeu parent dans le cas d'un DLC
                 val parentSelectionne = if (isDlc) {
-                    jeuVideoDAO.getJeuVideoById(cbJeux?.selectedItem?.id)
+                    cbJeux?.selectedItem
                 } else {
                     null
                 }
@@ -342,6 +388,7 @@ class Menus(private val gui: MultiWindowTextGUI,
 
                     versionDAO.persister(version);
 
+                    log.info("Le $label ${nouveauJeu.nom} a été publié")
                     MessageDialog.showMessageDialog(gui, "Succès", "$label publié")
                     window.close()
                 } catch (e: Exception) {
@@ -360,15 +407,22 @@ class Menus(private val gui: MultiWindowTextGUI,
         gui.addWindowAndWait(window)
     }
 
+    /**
+     * Page de publication de nouveau patch
+     * @author remi
+     */
     fun menuPublicationPatch() {
         val window = BasicWindow("Publier un nouveau patch")
         window.setHints(listOf(Window.Hint.CENTERED))
+
+        // Actualisation de la liste des jeux dans l'entité
+        editeurCourant = editeurDAO.refresh(editeurCourant)
 
         // Label | Input
         val panel = Panel(GridLayout(2))
 
         // jeu concerné
-        val listeJeux = jeuVideoDAO.allJeuxVideos
+        val listeJeux = editeurCourant.jeuxPublies
         if (listeJeux.isEmpty()) {
             MessageDialog.showMessageDialog(gui, "Erreur", "Aucun jeu n'est enregistré. Impossible de publier un patch.")
             return
@@ -445,6 +499,7 @@ class Menus(private val gui: MultiWindowTextGUI,
             } else {
                 try {
                     versionDAO.publierPatch(cbJeux.selectedItem, modifications, txtCommentaire.text)
+                    log.info("Un patch a été publié sur le jeu ${cbJeux.selectedItem.nom}")
                     MessageDialog.showMessageDialog(gui, "Succès", "Patch publié")
                     window.close()
                 } catch (e: Exception) {

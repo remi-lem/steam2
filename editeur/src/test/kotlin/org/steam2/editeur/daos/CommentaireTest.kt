@@ -6,15 +6,23 @@ import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.junit.jupiter.api.RepeatedTest
-import org.junit.jupiter.api.Test
 import org.steam2.editeur.entites.Commentaire
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Properties
 
+/**
+ * Tests de l'entité Commentaire
+ * @author remi
+ */
 internal class CommentaireTest {
-    //@Test
-    @RepeatedTest(100)
+    /**
+     * Test de création de commentaires clients
+     * Cette méthode envoie les commentaires au format Avro sur le topic Kafka, qui sont ensuite lus par le service
+     * @see org.steam2.editeur.application.RecupererCommentaires
+     * @author remi
+     */
+    @RepeatedTest(30)
     fun creerCommentaires() {
         // Récupération du paramétrage Kafka
         val props = Properties()

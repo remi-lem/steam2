@@ -3,16 +3,18 @@ package org.steam2.editeur.application
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
-import org.steam2.editeur.daos.CommentaireDAO
 import org.steam2.editeur.daos.IncidentDAO
 import org.steam2.editeur.daos.JeuVideoDAO
-import org.steam2.editeur.entites.Commentaire
 import org.steam2.editeur.entites.Incident
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
+/**
+ * Service de récupération des incidents
+ * @author remi
+ */
 class RecupererIncidents(private val consumer: KafkaConsumer<String, GenericRecord>,
                          private val jeuVideoDAO: JeuVideoDAO,
                          private val incidentDAO: IncidentDAO) {

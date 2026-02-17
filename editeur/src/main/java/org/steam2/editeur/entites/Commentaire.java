@@ -5,6 +5,10 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entité Commentaire
+ * @author remi
+ */
 @Entity
 @Table(name = "commentaire")
 @Getter

@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Entité VersionJeu
+ * @author remi
+ */
 @Entity
 @Table(name = "version_jeu")
 @Getter

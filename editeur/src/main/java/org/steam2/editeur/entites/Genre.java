@@ -6,6 +6,10 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * Entité Genre
+ * @author remi
+ */
 @Entity
 @Table(name = "genre")
 @Getter

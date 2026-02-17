@@ -6,10 +6,14 @@ import kotlin.Pair;
 import org.steam2.editeur.entites.DetailModifPatch;
 import org.steam2.editeur.entites.JeuVideo;
 import org.steam2.editeur.entites.VersionJeu;
-import org.steam2.editeur.entities.type.TypeModificationPatch;
+import org.steam2.editeur.entites.type.TypeModificationPatch;
 
 import java.util.List;
 
+/**
+ * Data Access Object faisant les accès aux entités Version
+ * @author remi
+ */
 public class VersionDAO {
 
     private final EntityManagerFactory emf;
@@ -18,6 +22,11 @@ public class VersionDAO {
         this.emf = emf;
     }
 
+    /**
+     * Enregistrer une entité Version en base
+     * @param version l'entiter à persister
+     * @author remi
+     */
     public void persister(VersionJeu version) {
         try (EntityManager em = emf.createEntityManager()) {
             em.getTransaction().begin();
@@ -26,6 +35,12 @@ public class VersionDAO {
         }
     }
 
+    /**
+     * Publication d'un patch (ajout de version et enregistrement des détails)
+     * @param jeuVideo le jeu concerné
+     * @param modifications la liste des modifications contenues dans le patch
+     * @param commentaire le commentaire de l'éditeur sur le patch
+     */
     public void publierPatch(JeuVideo jeuVideo, List<Pair<TypeModificationPatch, String>> modifications, String commentaire) {
         try (EntityManager em = emf.createEntityManager()) {
             em.getTransaction().begin();

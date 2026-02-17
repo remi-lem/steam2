@@ -4,8 +4,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.steam2.editeur.entities.type.TypeModificationPatch;
+import org.steam2.editeur.entites.type.TypeModificationPatch;
 
+/**
+ * Entité DetailModifPatch
+ * @author remi
+ */
 @Entity
 @Table(name = "detail_modif_patch")
 @Getter

@@ -6,6 +6,10 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entité Incident
+ * @author remi
+ */
 @Entity
 @Table(name = "incident")
 @Getter

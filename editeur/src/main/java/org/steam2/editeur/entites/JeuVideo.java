@@ -3,10 +3,14 @@ package org.steam2.editeur.entites;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.steam2.editeur.entities.type.Plateforme;
+import org.steam2.editeur.entites.type.Plateforme;
 
-import java.util.Comparator;import java.util.List;
+import java.util.List;
 
+/**
+ * Entité JeuVideo
+ * @author remi
+ */
 @Entity
 @Table(name = "jeu")
 @Getter
@@ -43,11 +47,14 @@ public class JeuVideo {
     )
     private List<Genre> genres;
 
-    @OneToMany(mappedBy = "jeu")
+    @OneToMany(mappedBy = "jeu", fetch = FetchType.LAZY)
     private List<VersionJeu> versions;
 
-    @OneToMany(mappedBy = "jeu")
+    @OneToMany(mappedBy = "jeu", fetch = FetchType.LAZY)
     private List<Commentaire> commentaires;
+
+    @OneToMany(mappedBy = "jeu", fetch = FetchType.LAZY)
+    private List<Incident> incidents;
 
     @Override
     public String toString() {
