@@ -62,13 +62,13 @@ class Menus(private val gui: MultiWindowTextGUI,
                 .setDescription("Choisissez une action :")
                 .setCanCancel(false)
                 .addAction("Publier un jeu") {
-                    menuPublicationJeu()
+                    menuPublicationJeu(false)
                 }
                 .addAction("Publier un patch") {
                     menuPublicationPatch()
                 }
                 .addAction("Publier un DLC") {
-                    MessageDialog.showMessageDialog(gui, "Erreur", "Option non disponible pour le moment.")
+                    menuPublicationJeu(true)
                 }
                 .addAction("Consulter les commentaires utilisateurs") {
                     menuConsultationCommentaires()
@@ -233,18 +233,37 @@ class Menus(private val gui: MultiWindowTextGUI,
         builder.build().showDialog(gui)
     }
 
-    fun menuPublicationJeu() {
-        val window = BasicWindow("Publier un nouveau jeu")
+    fun menuPublicationJeu(isDlc: Boolean) {
+        val label = if(isDlc) { "DLC" } else { "jeu" }
+
+        val window = BasicWindow("Publier un nouveau $label")
         window.setHints(listOf(Window.Hint.CENTERED))
 
         // Label | Input
         val panel = Panel(GridLayout(2))
 
-        panel.addComponent(Label("Nom du jeu :"))
+        var cbJeux: ComboBox<JeuVideo>? = null
+        var cbPlateforme: ComboBox<Plateforme>? = null
+
+        if(isDlc) {
+            // jeu concerné
+            val listeJeux = jeuVideoDAO.allJeuxVideos
+            if (listeJeux.isEmpty()) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "Aucun jeu n'est enregistré. Impossible de publier un DLC.")
+                return
+            }
+            panel.addComponent(Label("Jeu :"))
+            cbJeux = ComboBox<JeuVideo>(listeJeux)
+            panel.addComponent(cbJeux)
+        }
+
+        panel.addComponent(Label("Nom du $label :"))
         val txtNom = TextBox().addTo(panel)
 
-        panel.addComponent(Label("Plateforme :"))
-        val cbPlateforme = ComboBox<Plateforme>(*Plateforme.entries.toTypedArray()).addTo(panel)
+        if(!isDlc) {
+            panel.addComponent(Label("Plateforme :"))
+            cbPlateforme = ComboBox<Plateforme>(*Plateforme.entries.toTypedArray()).addTo(panel)
+        }
 
         panel.addComponent(Label("Genres :"))
         val genreSubPanel = Panel(LinearLayout(Direction.VERTICAL))
@@ -281,11 +300,33 @@ class Menus(private val gui: MultiWindowTextGUI,
             if (txtNom.text.isBlank()) {
                 MessageDialog.showMessageDialog(gui, "Erreur", "Le nom est obligatoire")
             } else {
+                // jeu parent dans le cas d'un DLC
+                val parentSelectionne = if (isDlc) {
+                    jeuVideoDAO.getJeuVideoById(cbJeux?.selectedItem?.id)
+                } else {
+                    null
+                }
+
+                // Platefome séléctionnée pour un jeu, celle du jeu pour un DLC
+                val nouvellePlateforme = if (isDlc) {
+                    parentSelectionne?.plateforme
+                } else {
+                    cbPlateforme?.selectedItem
+                }
+
+                // vérification de la présence de la plateforme
+                if (nouvellePlateforme == null) {
+                    MessageDialog.showMessageDialog(gui, "Erreur", "Plateforme non définie")
+                    return@Button
+                }
+
+                // nouveau jeu/dlc
                 val nouveauJeu = JeuVideo().apply {
                     nom = txtNom.text
                     editeur = editeurCourant
-                    plateforme = cbPlateforme.selectedItem
+                    plateforme = nouvellePlateforme
                     genres = listGenres.checkedItems
+                    jeuParent = parentSelectionne
                 }
 
                 try {
@@ -301,7 +342,7 @@ class Menus(private val gui: MultiWindowTextGUI,
 
                     versionDAO.persister(version);
 
-                    MessageDialog.showMessageDialog(gui, "Succès", "Jeu publié")
+                    MessageDialog.showMessageDialog(gui, "Succès", "$label publié")
                     window.close()
                 } catch (e: Exception) {
                     MessageDialog.showMessageDialog(gui, "Erreur SQL", e.message ?: "Erreur inconnue")

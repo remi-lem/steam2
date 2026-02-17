@@ -12,8 +12,11 @@ CREATE TABLE jeu (
     editeur_id INT NOT NULL,
     nom VARCHAR(50) NOT NULL UNIQUE,
     plateforme VARCHAR(50) NOT NULL,
+    jeu_parent_id INT,
     CONSTRAINT fk_jeu_editeur_id
-         FOREIGN KEY (editeur_id) REFERENCES editeur(id)
+        FOREIGN KEY (editeur_id) REFERENCES editeur(id),
+    CONSTRAINT fk_jeu_parent_id
+        FOREIGN KEY (jeu_parent_id) REFERENCES jeu(id)
 );
 
 CREATE TABLE genre (

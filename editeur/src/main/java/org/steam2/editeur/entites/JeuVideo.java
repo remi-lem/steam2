@@ -28,6 +28,13 @@ public class JeuVideo {
     @Enumerated(EnumType.STRING)
     private Plateforme plateforme;
 
+    @ManyToOne
+    @JoinColumn(name = "jeu_parent_id")
+    private JeuVideo jeuParent;
+
+    @OneToMany(mappedBy = "jeuParent")
+    private List<JeuVideo> dlcs;
+
     @ManyToMany
     @JoinTable(
         name = "jeu_genre",
