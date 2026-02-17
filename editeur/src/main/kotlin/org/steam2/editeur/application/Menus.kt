@@ -166,57 +166,26 @@ class Menus(private val gui: MultiWindowTextGUI,
      * @author remi
      */
     fun menuConsultationCommentaires(page: Int = 0) {
-        val pageSize = 10
         val commentaires = commentaireDAO.getCommentaires(editeurCourant.id)
-        var totalPages = (commentaires.size + pageSize - 1) / pageSize
-        if(totalPages == 0) totalPages = 1
+        menuConsultationGenerique(
+            page = page,
+            titre = "Commentaires",
+            messageVide = "Aucun commentaire en base.",
+            items = commentaires,
+            itemMapper = { com, fDate, fDateTime ->
+                val dateAffichee = com.date.format(fDate)
+                val dateTimeAffichee = com.date.format(fDateTime)
+                val message = "Date : $dateTimeAffichee\nCommentaire : ${com.commentaire}"
 
-        val builder = ActionListDialogBuilder()
-            .setTitle("Commentaires (Page ${page + 1}/$totalPages)")
-
-        // on determine quels commentaires sont affichés sur la page actuelle
-        val startIndex = page * pageSize
-        val pageItems = commentaires.drop(startIndex).take(pageSize)
-
-        // bouton precedent
-        if (page > 0) {
-            builder.addAction("<<< PAGE PRÉCÉDENTE") { menuConsultationCommentaires(page - 1) }
-        }
-
-        // Mise en forme des dates
-        val formatterDate = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
-            .withLocale(Locale.FRENCH)
-        val formatterDateTime = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.MEDIUM)
-            .withLocale(Locale.FRENCH)
-
-        // contenu
-        pageItems.forEach { com ->
-            // date au format jj/mm/aaaa
-            val dateAffichee = com.date.format(formatterDate)
-            val dateTimeAffichee = com.date.format(formatterDateTime)
-            val message = "Date : $dateTimeAffichee\nCommentaire : ${com.commentaire}"
-
-            // Si le commentaire est long, on le coupe
-            val commentaireAffiche = if (com.commentaire.length > 15) {
-                "${com.commentaire.take(15)}…"
-            } else {
-                com.commentaire
-            }
-            builder.addAction("${com.jeu} ($dateAffichee) : $commentaireAffiche") {
-                MessageDialog.showMessageDialog(gui, "Détail", message)
-                menuConsultationCommentaires(page) // On relance la page après lecture
-            }
-        }
-        if (commentaires.isEmpty()) {
-            builder.setDescription("Aucun commentaire en base.")
-        }
-
-        // bouton suivant
-        if (startIndex + pageSize < commentaires.size) {
-            builder.addAction("PAGE SUIVANTE >>>") { menuConsultationCommentaires(page + 1) }
-        }
-
-        builder.build().showDialog(gui)
+                val commentaireAffiche = if (com.commentaire.length > 15) {
+                    "${com.commentaire.take(15)}…"
+                } else {
+                    com.commentaire
+                }
+                Pair("${com.jeu} ($dateAffichee) : $commentaireAffiche", message)
+            },
+            callback = { p -> menuConsultationCommentaires(p) }
+        )
     }
 
     /**
@@ -225,23 +194,54 @@ class Menus(private val gui: MultiWindowTextGUI,
      * @author remi
      */
     fun menuConsultationIncidents(page: Int = 0) {
-        val pageSize = 10
         val incidents = incidentDAO.getIncidents(editeurCourant.id)
-        var totalPages = (incidents.size + pageSize - 1) / pageSize
+        menuConsultationGenerique(
+            page = page,
+            titre = "Rapports d'incidents",
+            messageVide = "Aucun rapport d'incident en base.",
+            items = incidents,
+            itemMapper = { inc, fDate, fDateTime ->
+                val dateAffichee = inc.date.format(fDate)
+                val dateTimeAffichee = inc.date.format(fDateTime)
+                val message = "Date : $dateTimeAffichee\nDétails : ${inc.details}"
+                Pair("${inc.jeu} ($dateAffichee)", message)
+            },
+            callback = { p -> menuConsultationIncidents(p) }
+        )
+    }
+
+    /**
+     * Menu générique de consultation des commentaires ou des rapports d'incidents
+     * @param page l'index de la page à consulter
+     * @param titre le titre de la fenêtre
+     * @param messageVide le message affiché si aucune donnée ne peut être affichée
+     * @param items les items à afficher (commentaires ou rapports d'incident)
+     * @param itemMapper mapper pour récupérer les messages en fonction du contexte (commentaire ou rapport d'incident)
+     * @param callback retour à la méthode appelante lors du changement de page ou de la fin de consultation d'un élément
+     */
+    private fun <T> menuConsultationGenerique(
+        page: Int,
+        titre: String,
+        messageVide: String,
+        items: List<T>,
+        itemMapper: (T, DateTimeFormatter, DateTimeFormatter) -> Pair<String, String>,
+        callback: (Int) -> Unit
+    ) {
+        val pageSize = 10
+        var totalPages = (items.size + pageSize - 1) / pageSize
         if(totalPages == 0) totalPages = 1
 
         val builder = ActionListDialogBuilder()
-            .setTitle("Rapports d'incidents (Page ${page + 1}/$totalPages)")
+            .setTitle("$titre (Page ${page + 1}/$totalPages)")
 
-        // on determine quels incidents sont affichés sur la page actuelle
+        // on determine quels items sont affichés sur la page actuelle
         val startIndex = page * pageSize
-        val pageItems = incidents.drop(startIndex).take(pageSize)
+        val pageItems = items.drop(startIndex).take(pageSize)
 
         // bouton precedent
         if (page > 0) {
-            builder.addAction("<<< PAGE PRÉCÉDENTE") { menuConsultationIncidents(page - 1) }
+            builder.addAction("<<< PAGE PRÉCÉDENTE") { callback(page - 1) }
         }
-
 
         // Mise en forme des dates
         val formatterDate = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
@@ -250,22 +250,20 @@ class Menus(private val gui: MultiWindowTextGUI,
             .withLocale(Locale.FRENCH)
 
         // contenu
-        pageItems.forEach { inc ->
-            val dateAffichee = inc.date.format(formatterDate)
-            val dateTimeAffichee = inc.date.format(formatterDateTime)
-            val message = "Date : $dateTimeAffichee\nDétails : ${inc.details}"
-            builder.addAction("${inc.jeu} ($dateAffichee)") {
-                MessageDialog.showMessageDialog(gui, "Détails", message)
-                menuConsultationIncidents(page) // On relance la page après lecture
+        pageItems.forEach { item ->
+            val (label, detail) = itemMapper(item, formatterDate, formatterDateTime)
+            builder.addAction(label) {
+                MessageDialog.showMessageDialog(gui, "Détail", detail)
+                callback(page) // On relance la page après lecture
             }
         }
-        if (incidents.isEmpty()) {
-            builder.setDescription("Aucun rapport d'incident en base.")
+        if (items.isEmpty()) {
+            builder.setDescription(messageVide)
         }
 
         // bouton suivant
-        if (startIndex + pageSize < incidents.size) {
-            builder.addAction("PAGE SUIVANTE >>>") { menuConsultationIncidents(page + 1) }
+        if (startIndex + pageSize < items.size) {
+            builder.addAction("PAGE SUIVANTE >>>") { callback(page + 1) }
         }
 
         builder.build().showDialog(gui)
