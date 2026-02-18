@@ -1,4 +1,13 @@
--- CREATION DES TABLES
+-- CREATION DES BASES
+
+CREATE DATABASE steam2_editeur;
+
+CREATE USER 'editeur'@'%' IDENTIFIED BY 'VsOLkPWO2VbOKp60nH3z';
+GRANT ALL PRIVILEGES ON steam2_editeur.* TO 'editeur'@'%';
+
+-- CREATION DES TABLES POUR LA BASE EDITEUR
+
+USE steam2_editeur;
 
 CREATE TABLE editeur (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -73,12 +82,7 @@ CREATE TABLE detail_modif_patch (
         FOREIGN KEY (version_id) REFERENCES version_jeu(id)
 );
 
-
-
-
-
-
--- INSERTION DE DONNEES
+-- INSERTION DE DONNEES DANS LA BASE EDITEUR
 
 INSERT INTO editeur(type,
                     nom,

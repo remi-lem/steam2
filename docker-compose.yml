@@ -58,7 +58,6 @@ services:
     environment:
       # Mot de passe utilisé lors du développement, à ne pas utiliser en production
       MYSQL_ROOT_PASSWORD: oR3N2M603y4SyfE7BV86
-      MYSQL_DATABASE: steam2
     ports:
       # Attention port différent de d'habitude pour éviter les conflits si un serveur mysql tourne déjà
       - "3366:3306"

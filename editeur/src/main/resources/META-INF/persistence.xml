@@ -17,9 +17,9 @@
 
     <properties>
       <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver" />
-      <property name="jakarta.persistence.jdbc.url"    value="jdbc:mysql://localhost:3366/steam2" />
-      <property name="jakarta.persistence.jdbc.user"   value="root" />
-      <property name="jakarta.persistence.jdbc.password" value="oR3N2M603y4SyfE7BV86" />
+      <property name="jakarta.persistence.jdbc.url"    value="jdbc:mysql://localhost:3366/steam2_editeur" />
+      <property name="jakarta.persistence.jdbc.user"   value="editeur" />
+      <property name="jakarta.persistence.jdbc.password" value="VsOLkPWO2VbOKp60nH3z" />
 <!--      <property name="hibernate.show_sql"   value="true" />-->
       <property name="hibernate.format_sql" value="true" />
     </properties>
