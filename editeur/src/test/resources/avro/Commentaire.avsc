@@ -9,7 +9,10 @@
     },
     {
       "name": "date",
-      "type": "long"
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
     },
     {
       "name": "commentaire",

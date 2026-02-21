@@ -2,7 +2,10 @@ package org.steam2.editeur.daos;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import org.steam2.editeur.entites.Genre;
 import org.steam2.editeur.entites.JeuVideo;
+
+import java.util.List;
 
 /**
  * Data Access Object faisant les accès aux entités Jeu Vidéo
@@ -27,6 +30,20 @@ public class JeuVideoDAO {
     public JeuVideo getJeuVideoById(Integer id) {
         try (EntityManager em = emf.createEntityManager()) {
             return em.find(JeuVideo.class, id);
+        }
+    }
+
+    /**
+     * Récupération des genres d'un JeuVidéo
+     * @param jeuVideo le jeu concerné
+     * @return la liste des genres du jeu
+     */
+    public List<Genre> getGenresByJeuVideo(JeuVideo jeuVideo) {
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery(
+                "SELECT g FROM JeuVideo j JOIN j.genres g WHERE j.id = :id ORDER BY g.nom ASC", Genre.class)
+                .setParameter("id", jeuVideo.getId())
+                .getResultList();
         }
     }
 

@@ -48,7 +48,8 @@ class Menus(private val gui: MultiWindowTextGUI,
             private val incidentDAO: IncidentDAO,
             private val jeuVideoDAO: JeuVideoDAO,
             private val genreDAO: GenreDAO,
-            private val versionDAO: VersionDAO
+            private val versionDAO: VersionDAO,
+            private val serviceEnvoiJeux: EnvoiJeux
 ) {
 
     private val log = LoggerFactory.getLogger(Menus::class.java)
@@ -384,7 +385,10 @@ class Menus(private val gui: MultiWindowTextGUI,
                         correction = 0
                     }
 
-                    versionDAO.persister(version);
+                    versionDAO.persister(version)
+
+                    // Envoi sur le topic kafka
+                    serviceEnvoiJeux.envoyer(nouveauJeu)
 
                     log.info("Le $label ${nouveauJeu.nom} a été publié")
                     MessageDialog.showMessageDialog(gui, "Succès", "$label publié")
@@ -497,6 +501,9 @@ class Menus(private val gui: MultiWindowTextGUI,
             } else {
                 try {
                     versionDAO.publierPatch(cbJeux.selectedItem, modifications, txtCommentaire.text)
+
+                    // TODO envoi sur le topic kafka
+
                     log.info("Un patch a été publié sur le jeu ${cbJeux.selectedItem.nom}")
                     MessageDialog.showMessageDialog(gui, "Succès", "Patch publié")
                     window.close()
