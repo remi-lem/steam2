@@ -24,8 +24,11 @@ CREATE TABLE jeu (
     id INT AUTO_INCREMENT PRIMARY KEY,
     editeur_id INT NOT NULL,
     nom VARCHAR(50) NOT NULL UNIQUE,
+    prix DECIMAL(5,2) NOT NULL,
     plateforme VARCHAR(50) NOT NULL,
     jeu_parent_id INT,
+    CONSTRAINT chk_prix
+         CHECK ( prix_editeur >= 0.0 ),
     CONSTRAINT fk_jeu_editeur_id
         FOREIGN KEY (editeur_id) REFERENCES editeur(id),
     CONSTRAINT fk_jeu_parent_id

@@ -8,12 +8,16 @@
       "type": "int"
     },
     {
+      "name": "editeur_id",
+      "type": "int"
+    },
+    {
       "name": "nom",
       "type": "string"
     },
     {
-      "name": "editeur_id",
-      "type": "int"
+      "name": "prix",
+      "type": "float"
     },
     {
       "name": "plateforme",

@@ -37,6 +37,7 @@ class EnvoiJeux(private val producer: KafkaProducer<String, GenericRecord>,
             put("id", jeu.id)
             put("nom", jeu.nom)
             put("editeur_id", jeu.editeur.id)
+            put("prix", jeu.prix)
 
             put("plateforme", GenericData.EnumSymbol(schema.getField("plateforme").schema(), jeu.plateforme.name))
 

@@ -2,41 +2,25 @@ package org.steam2.editeur.application
 
 import com.google.common.hash.Hashing
 import com.googlecode.lanterna.TerminalSize
-import com.googlecode.lanterna.gui2.BasicWindow
-import com.googlecode.lanterna.gui2.Button
-import com.googlecode.lanterna.gui2.CheckBoxList
-import com.googlecode.lanterna.gui2.ComboBox
-import com.googlecode.lanterna.gui2.Direction
-import com.googlecode.lanterna.gui2.EmptySpace
-import com.googlecode.lanterna.gui2.GridLayout
-import com.googlecode.lanterna.gui2.Label
-import com.googlecode.lanterna.gui2.LinearLayout
-import com.googlecode.lanterna.gui2.MultiWindowTextGUI
-import com.googlecode.lanterna.gui2.Panel
-import com.googlecode.lanterna.gui2.TextBox
-import com.googlecode.lanterna.gui2.Window
+import com.googlecode.lanterna.gui2.*
 import com.googlecode.lanterna.gui2.dialogs.ActionListDialogBuilder
 import com.googlecode.lanterna.gui2.dialogs.MessageDialog
 import com.googlecode.lanterna.gui2.dialogs.TextInputDialog
 import org.slf4j.LoggerFactory
-import org.steam2.editeur.daos.CommentaireDAO
+import org.steam2.editeur.daos.*
 import org.steam2.editeur.entites.Editeur
-import org.steam2.editeur.daos.EditeurDAO
-import org.steam2.editeur.daos.GenreDAO
-import org.steam2.editeur.daos.IncidentDAO
-import org.steam2.editeur.daos.JeuVideoDAO
-import org.steam2.editeur.daos.VersionDAO
 import org.steam2.editeur.entites.Genre
 import org.steam2.editeur.entites.JeuVideo
 import org.steam2.editeur.entites.VersionJeu
 import org.steam2.editeur.entites.type.Plateforme
 import org.steam2.editeur.entites.type.TypeModificationPatch
 import org.steam2.editeur.exceptions.LoginException
+import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.util.Locale
-import java.util.Properties
+import java.util.*
+import java.util.regex.Pattern
 
 /**
  * Menus de l'application editeur
@@ -310,6 +294,11 @@ class Menus(private val gui: MultiWindowTextGUI,
             cbPlateforme = ComboBox<Plateforme>(*Plateforme.entries.toTypedArray()).addTo(panel)
         }
 
+        panel.addComponent(Label("Prix :"))
+        val prixBox = TextBox(TerminalSize(10, 1))
+        prixBox.setValidationPattern(Pattern.compile("[0-9]{1,3}([.,][0-9]{0,2})?"))
+        panel.addComponent(prixBox)
+
         panel.addComponent(Label("Genres :"))
         val genreSubPanel = Panel(LinearLayout(Direction.VERTICAL))
 
@@ -344,6 +333,8 @@ class Menus(private val gui: MultiWindowTextGUI,
         val btnValider = Button("Enregistrer") {
             if (txtNom.text.isBlank()) {
                 MessageDialog.showMessageDialog(gui, "Erreur", "Le nom est obligatoire")
+            } else if(prixBox.text.isBlank()) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "Le prix est obligatoire")
             } else {
                 // jeu parent dans le cas d'un DLC
                 val parentSelectionne = if (isDlc) {
@@ -365,11 +356,15 @@ class Menus(private val gui: MultiWindowTextGUI,
                     return@Button
                 }
 
+                val prixTxt: String = prixBox.text.replace(',', '.')
+                val prixFinal = BigDecimal(prixTxt)
+
                 // nouveau jeu/dlc
                 val nouveauJeu = JeuVideo().apply {
                     nom = txtNom.text
                     editeur = editeurCourant
                     plateforme = nouvellePlateforme
+                    prix = prixFinal
                     genres = listGenres.checkedItems
                     jeuParent = parentSelectionne
                 }

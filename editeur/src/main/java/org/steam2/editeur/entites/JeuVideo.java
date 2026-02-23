@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.steam2.editeur.entites.type.Plateforme;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -27,6 +28,9 @@ public class JeuVideo {
 
     @Column(name = "nom")
     private String nom;
+
+    @Column(name = "prix")
+    private BigDecimal prix;
 
     @Column(name = "plateforme")
     @Enumerated(EnumType.STRING)
