@@ -6,11 +6,15 @@ CREATE DATABASE steam2_client;
 
 CREATE USER 'editeur'@'%' IDENTIFIED BY 'VsOLkPWO2VbOKp60nH3z';
 GRANT ALL PRIVILEGES ON steam2_editeur.* TO 'editeur'@'%';
-CREATE USER 'client'@'%' IDENTIFIED BY 'VsOLkPWO2VbOKp60nH3z';
-GRANT ALL PRIVILEGES on steam2_client.* TO 'client'@'%';
+
+CREATE USER 'plateforme'@'%' IDENTIFIED BY 'sjNf6ANS257Kf84cjXi0';
+GRANT ALL PRIVILEGES ON steam2_plateforme.* TO 'plateforme'@'%';
+
+CREATE USER 'client'@'%' IDENTIFIED BY 'KuSAc73Y41dMeD7AoaDV';
+GRANT ALL PRIVILEGES ON steam2_client.* TO 'client'@'%';
 
 -- CREATION DES TABLES POUR LA BASE EDITEUR
-
+-- @author remi
 USE steam2_editeur;
 
 CREATE TABLE editeur (
@@ -28,7 +32,7 @@ CREATE TABLE jeu (
     plateforme VARCHAR(50) NOT NULL,
     jeu_parent_id INT,
     CONSTRAINT chk_prix
-         CHECK ( prix_editeur >= 0.0 ),
+         CHECK ( prix >= 0.0 ),
     CONSTRAINT fk_jeu_editeur_id
         FOREIGN KEY (editeur_id) REFERENCES editeur(id),
     CONSTRAINT fk_jeu_parent_id
@@ -100,6 +104,7 @@ VALUES ('INDEPENDANT',
 );
 
 
+
 -- CREATION DES TABLES POUR LA BASE PLATEFORME
 
 USE steam2_plateforme;
@@ -107,7 +112,7 @@ USE steam2_plateforme;
 CREATE TABLE editeur (
     id INT PRIMARY KEY,
     type VARCHAR(50) NOT NULL,
-    nom VARCHAR(50) NOT NULL UNIQUE,
+    nom VARCHAR(50) NOT NULL UNIQUE
 );
 
 CREATE TABLE jeu (
@@ -205,7 +210,7 @@ CREATE TABLE amitie (
     CONSTRAINT fk_amitie_joueur2_id
         FOREIGN KEY (joueur2_id) REFERENCES joueur(id),
     CONSTRAINT check_amitie
-        CHECK (joueur1_id <> joueur2_id) --2 joueurs différents
+        CHECK (joueur1_id <> joueur2_id) -- 2 joueurs différents
 );
 
 CREATE TABLE abonnement (
@@ -219,9 +224,10 @@ CREATE TABLE abonnement (
         FOREIGN KEY (editeur_id) REFERENCES editeur(id)
 );
 
---creation de la BDD client
 
-USING steam2_client;
+-- CREATION DES TABLES POUR LE CLIENT
+
+USE steam2_client;
 
 CREATE TABLE editeur (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -300,7 +306,7 @@ CREATE TABLE detail_modif_patch (
 CREATE TABLE joueur (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
-    password CHA(64) NOT NULL, -- hash sha256
+    password CHAR(64) NOT NULL, -- hash sha256
     nom VARCHAR(50) NOT NULL,
     prenom VARCHAR(50) NOT NULL,
     date_naissance DATETIME NOT NULL
@@ -314,9 +320,9 @@ CREATE TABLE session (
     date_session DATE,
     CONSTRAINT fk_session_jeu_id
         FOREIGN KEY (jeu_id) REFERENCES jeu(id),
-    CONSTRAINT fk session_joueur_id
+    CONSTRAINT fk_session_joueur_id
         FOREIGN KEY (joueur_id) REFERENCES joueur(id)
-)
+);
 
 CREATE TABLE joueur_jeu (
     joueur_id INT,

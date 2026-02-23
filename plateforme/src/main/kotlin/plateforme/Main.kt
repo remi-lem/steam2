@@ -1,9 +1,9 @@
-package org.steam2.plateforme.plateforme
+package org.steam2.plateforme
 
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("Main")
 
 fun main() {
-    org.steam2.plateforme.org.steam2.plateforme.log.info("Démarrage de l'application de la plateforme")
+    log.info("Démarrage de l'application de la plateforme")
 }

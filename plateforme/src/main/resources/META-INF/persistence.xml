@@ -13,7 +13,7 @@
       <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver" />
       <property name="jakarta.persistence.jdbc.url"    value="jdbc:mysql://localhost:3366/steam2_plateforme" />
       <property name="jakarta.persistence.jdbc.user"   value="plateforme" />
-      <property name="jakarta.persistence.jdbc.password" value="acces_a_creer" />
+      <property name="jakarta.persistence.jdbc.password" value="sjNf6ANS257Kf84cjXi0" />
 <!--      <property name="hibernate.show_sql"   value="true" />-->
       <property name="hibernate.format_sql" value="true" />
     </properties>
