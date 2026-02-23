@@ -6,8 +6,13 @@
 
   <persistence-unit name="steam2-client">
 
-
-
+    <class>org.steam2.client.entites.Editeur</class>
+    <class>org.steam2.client.entites.JeuVideo</class>
+    <class>org.steam2.client.entites.Genre</class>
+    <class>org.steam2.client.entites.VersionJeu</class>
+    <class>org.steam2.client.entites.Commentaire</class>
+    <class>org.steam2.client.entites.Joueur</class>
+    <class>org.steam2.client.entites.Session</class>
 
     <properties>
       <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver" />

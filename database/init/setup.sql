@@ -17,6 +17,15 @@ CREATE TABLE editeur (
     password CHAR(64) NOT NULL -- hash sha256
 );
 
+CREATE TABLE joueur (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password CHA(64) NOT NULL, -- hash sha256
+    nom VARCHAR(50) NOT NULL,
+    prenom VARCHAR(50) NOT NULL,
+    date_naissance DATETIME NOT NULL
+);
+
 CREATE TABLE jeu (
     id INT AUTO_INCREMENT PRIMARY KEY,
     editeur_id INT NOT NULL,
@@ -27,6 +36,29 @@ CREATE TABLE jeu (
         FOREIGN KEY (editeur_id) REFERENCES editeur(id),
     CONSTRAINT fk_jeu_parent_id
         FOREIGN KEY (jeu_parent_id) REFERENCES jeu(id)
+);
+
+CREATE TABLE session (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    jeu_id INT,
+    joueur_id INT,
+    temps_joue_m INT,
+    date_session DATE,
+    CONSTRAINT fk_session_jeu_id
+        FOREIGN KEY (jeu_id) REFERENCES jeu(id),
+    CONSTRAINT fk session_joueur_id
+        FOREIGN KEY (joueur_id) REFERENCES joueur(id)
+)
+
+CREATE TABLE joueur_jeu (
+    joueur_id INT,
+    jeu_id INT,
+    CONSTRAINT pk_joueur_jeu
+        PRIMARY KEY (joueur_id, jeu_id),
+    CONSTRAINT fk_joueur_jeu_joueur_id
+        FOREIGN KEY (joueur_id) REFERENCES joueur(id),
+    CONSTRAINT fk_joueur_jeu_jeu_id
+        FOREIGN KEY (jeu_id) REFERENCES jeu(id)
 );
 
 CREATE TABLE genre (
