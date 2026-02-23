@@ -4,7 +4,6 @@ import jakarta.persistence.Persistence
 import kotlinx.coroutines.runBlocking
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import org.steam2.client.daos.*;
 import java.util.Properties
@@ -24,13 +23,14 @@ fun main() = runBlocking {
     val sessionDAO = SessionDAO(emf)
 
     // Récupération du paramétrage Kafka
-    val props = Properties()
+    val propsJeuxKafka = Properties()
     val inputStream = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka.properties")
-    props.load(inputStream)
-    val topic = props.getProperty("topic.name")
+    val inputStreamJeux = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/jeux.properties")
+    propsJeuxKafka.load(inputStream)
+    propsJeuxKafka.load(inputStreamJeux)
+    val topicJeux = propsJeuxKafka.getProperty("topic.name")
 
     // Kafka
-    val producer = KafkaProducer<String, GenericRecord>(props)
-    val consumer = KafkaConsumer<String, GenericRecord>(props)
-    consumer.subscribe(listOf(topic))
+    val consumerJeux = KafkaConsumer<String, GenericRecord>(propsJeuxKafka)
+    consumerJeux.subscribe(listOf(topicJeux))
 }

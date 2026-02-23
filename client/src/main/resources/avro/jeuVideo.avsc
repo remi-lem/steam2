@@ -1,0 +1,39 @@
+{
+  "type": "record",
+  "name": "JeuVideo",
+  "namespace": "org.steam2.client.entites",
+  "fields": [
+    {
+      "name": "id",
+      "type": "int"
+    },
+    {
+      "name": "nom",
+      "type": "string"
+    },
+    {
+      "name": "editeur_id",
+      "type": "int"
+    },
+    {
+      "name": "plateforme",
+      "type": {
+        "type": "enum",
+        "name": "PlateformeAvro",
+        "symbols": ["LINUX", "WINDOWS", "SWITCH"]
+      }
+    },
+    {
+      "name": "jeu_parent_id",
+      "type": ["int", "null"],
+      "default": null
+    },
+    {
+      "name": "genres",
+      "type": {
+        "type": "array",
+        "items": "string"
+      }
+    }
+  ]
+}

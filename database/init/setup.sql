@@ -2,9 +2,12 @@
 
 CREATE DATABASE steam2_editeur;
 CREATE DATABASE steam2_plateforme;
+CREATE DATABASE steam2_client;
 
 CREATE USER 'editeur'@'%' IDENTIFIED BY 'VsOLkPWO2VbOKp60nH3z';
 GRANT ALL PRIVILEGES ON steam2_editeur.* TO 'editeur'@'%';
+CREATE USER 'client'@'%' IDENTIFIED BY 'VsOLkPWO2VbOKp60nH3z';
+GRANT ALL PRIVILEGES on steam2_client.* TO 'client'@'%';
 
 -- CREATION DES TABLES POUR LA BASE EDITEUR
 
@@ -17,15 +20,6 @@ CREATE TABLE editeur (
     password CHAR(64) NOT NULL -- hash sha256
 );
 
-CREATE TABLE joueur (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password CHA(64) NOT NULL, -- hash sha256
-    nom VARCHAR(50) NOT NULL,
-    prenom VARCHAR(50) NOT NULL,
-    date_naissance DATETIME NOT NULL
-);
-
 CREATE TABLE jeu (
     id INT AUTO_INCREMENT PRIMARY KEY,
     editeur_id INT NOT NULL,
@@ -36,29 +30,6 @@ CREATE TABLE jeu (
         FOREIGN KEY (editeur_id) REFERENCES editeur(id),
     CONSTRAINT fk_jeu_parent_id
         FOREIGN KEY (jeu_parent_id) REFERENCES jeu(id)
-);
-
-CREATE TABLE session (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    jeu_id INT,
-    joueur_id INT,
-    temps_joue_m INT,
-    date_session DATE,
-    CONSTRAINT fk_session_jeu_id
-        FOREIGN KEY (jeu_id) REFERENCES jeu(id),
-    CONSTRAINT fk session_joueur_id
-        FOREIGN KEY (joueur_id) REFERENCES joueur(id)
-)
-
-CREATE TABLE joueur_jeu (
-    joueur_id INT,
-    jeu_id INT,
-    CONSTRAINT pk_joueur_jeu
-        PRIMARY KEY (joueur_id, jeu_id),
-    CONSTRAINT fk_joueur_jeu_joueur_id
-        FOREIGN KEY (joueur_id) REFERENCES joueur(id),
-    CONSTRAINT fk_joueur_jeu_jeu_id
-        FOREIGN KEY (jeu_id) REFERENCES jeu(id)
 );
 
 CREATE TABLE genre (
@@ -243,4 +214,114 @@ CREATE TABLE abonnement (
         FOREIGN KEY (joueur_id) REFERENCES joueur(id),
     CONSTRAINT fk_abonnement_editeur_id
         FOREIGN KEY (editeur_id) REFERENCES editeur(id)
+);
+
+--creation de la BDD client
+
+USING steam2_client;
+
+CREATE TABLE editeur (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(50) NOT NULL,
+    nom VARCHAR(50) NOT NULL UNIQUE,
+    password CHAR(64) NOT NULL -- hash sha256
+);
+
+CREATE TABLE jeu (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    editeur_id INT NOT NULL,
+    nom VARCHAR(50) NOT NULL UNIQUE,
+    plateforme VARCHAR(50) NOT NULL,
+    jeu_parent_id INT,
+    CONSTRAINT fk_jeu_editeur_id
+        FOREIGN KEY (editeur_id) REFERENCES editeur(id),
+    CONSTRAINT fk_jeu_parent_id
+        FOREIGN KEY (jeu_parent_id) REFERENCES jeu(id)
+);
+
+CREATE TABLE genre (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE jeu_genre (
+    jeu_id INT,
+    genre_id INT,
+    CONSTRAINT pk_jeu_genre
+        PRIMARY KEY (jeu_id, genre_id),
+    CONSTRAINT fk_jeu_genre_jeu_id
+        FOREIGN KEY (jeu_id) REFERENCES jeu(id),
+    CONSTRAINT fk_jeu_genre_genre_id
+        FOREIGN KEY (genre_id) REFERENCES genre(id)
+);
+
+CREATE TABLE version_jeu (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    jeu_id INT NOT NULL,
+    commentaire_editeur VARCHAR(1024) NOT NULL,
+    generation INT NOT NULL,
+    revision INT NOT NULL DEFAULT 0,
+    correction INT NOT NULL DEFAULT 0,
+    CONSTRAINT fk_version_jeu
+        FOREIGN KEY (jeu_id) REFERENCES jeu(id)
+);
+
+CREATE TABLE commentaire (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    commentaire VARCHAR(1024) NOT NULL,
+    date DATETIME NOT NULL,
+    jeu_id INT NOT NULL,
+    CONSTRAINT fk_commentaire_jeu
+        FOREIGN KEY (jeu_id) REFERENCES jeu(id)
+);
+
+CREATE TABLE incident (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    details VARCHAR(1024) NOT NULL,
+    date DATETIME NOT NULL,
+    jeu_id INT NOT NULL,
+    CONSTRAINT fk_incident_jeu
+        FOREIGN KEY (jeu_id) REFERENCES jeu(id)
+);
+
+CREATE TABLE detail_modif_patch (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    type_modification VARCHAR(50) NOT NULL,
+    commentaire VARCHAR(50) NOT NULL,
+    version_id INT NOT NULL,
+    CONSTRAINT fk_version_detail_modif
+        FOREIGN KEY (version_id) REFERENCES version_jeu(id)
+);
+
+
+CREATE TABLE joueur (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password CHA(64) NOT NULL, -- hash sha256
+    nom VARCHAR(50) NOT NULL,
+    prenom VARCHAR(50) NOT NULL,
+    date_naissance DATETIME NOT NULL
+);
+
+CREATE TABLE session (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    jeu_id INT,
+    joueur_id INT,
+    temps_joue_m INT,
+    date_session DATE,
+    CONSTRAINT fk_session_jeu_id
+        FOREIGN KEY (jeu_id) REFERENCES jeu(id),
+    CONSTRAINT fk session_joueur_id
+        FOREIGN KEY (joueur_id) REFERENCES joueur(id)
+)
+
+CREATE TABLE joueur_jeu (
+    joueur_id INT,
+    jeu_id INT,
+    CONSTRAINT pk_joueur_jeu
+        PRIMARY KEY (joueur_id, jeu_id),
+    CONSTRAINT fk_joueur_jeu_joueur_id
+        FOREIGN KEY (joueur_id) REFERENCES joueur(id),
+    CONSTRAINT fk_joueur_jeu_jeu_id
+        FOREIGN KEY (jeu_id) REFERENCES jeu(id)
 );
