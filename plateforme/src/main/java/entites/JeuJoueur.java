@@ -11,7 +11,7 @@ import java.time.LocalTime;
  */
 @Entity
 @Table(name="jeu_joueur")
-@IdClass(CleComposite.JeuJoueurId.class)
+@IdClass(entites.CleComposite.JeuJoueurId.class)
 @Getter
 public class JeuJoueur {
     @Id

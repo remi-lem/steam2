@@ -1,4 +1,4 @@
-package CleComposite;
+package entites.CleComposite;
 
 import java.io.Serializable;
 import java.util.Objects;
