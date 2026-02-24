@@ -168,7 +168,7 @@ CREATE TABLE incident (
 CREATE TABLE joueur (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
-    password CHAR(64) NOT NULL, -- hash sha256
+    plateforme VARCHAR(50) NOT NULL,
     nom VARCHAR(50) NOT NULL,
     prenom VARCHAR(50) NOT NULL,
     date_naissance DATETIME NOT NULL,
