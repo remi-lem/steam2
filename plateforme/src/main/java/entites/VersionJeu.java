@@ -11,6 +11,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "version_jeu")
 @Getter
+@Setter
 public class VersionJeu {
     @Id
     @Column(name = "id")

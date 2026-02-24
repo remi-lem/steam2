@@ -19,6 +19,31 @@ public class JeuVideoDAO {
     public JeuVideoDAO(EntityManagerFactory emf){this.emf = emf;}
 
     /**
+     * Persister un jeu vidéo en base
+     * @param jeu Le jeu vidéo à persister
+     * @author Wilhem
+     */
+    public void persister(JeuVideo jeu){
+        try (EntityManager em = emf.createEntityManager()) {
+            em.getTransaction().begin();
+            em.persist(jeu);
+            em.getTransaction().commit();
+        }
+    }
+
+    /**
+     * Récupération d'un jeu à partir de son id
+     * @param id l'identifiant du jeu
+     * @return l'entité Jeu Vidéo correspondante
+     * @author Wilhem
+     */
+    public JeuVideo getJeuVideoById(Integer id) {
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.find(JeuVideo.class, id);
+        }
+    }
+
+    /**
      * Récupère la liste des jeux sans aucun filtre
      * @param page numéro de la page (0 = première page)
      * @return une liste de {@value #MAX_RESULTS} jeux

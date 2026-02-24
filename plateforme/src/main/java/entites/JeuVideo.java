@@ -2,9 +2,11 @@ package entites;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import org.steam2.plateforme.plateforme.entites.type.Plateforme;
 import entites.Editeur;
-
+import entites.Genre;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -15,6 +17,7 @@ import java.util.List;
 @Entity
 @Table(name = "jeu")
 @Getter
+@Setter
 public class JeuVideo {
     @Id
     @Column(name = "id")
@@ -31,11 +34,15 @@ public class JeuVideo {
     @Enumerated(EnumType.STRING)
     private Plateforme plateforme;
 
+    @ManyToOne
+    @JoinColumn(name = "jeu_parent_id")
+    private JeuVideo jeuParent;
+
     @OneToMany(mappedBy = "jeuParent")
     private List<JeuVideo> dlcs;
 
     @Column(name="prix_editeur")
-    private Double prix_editeur;
+    private BigDecimal prix_editeur;
 
     @ManyToMany
     @JoinTable(

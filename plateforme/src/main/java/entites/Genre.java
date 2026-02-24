@@ -3,6 +3,8 @@ package entites;
 import jakarta.persistence.*;
 import lombok.Getter;
 import entites.JeuVideo;
+import lombok.Setter;
+
 import java.util.List;
 
 /**
@@ -12,6 +14,7 @@ import java.util.List;
 @Entity
 @Table(name = "genre")
 @Getter
+@Setter
 public class Genre {
     @Id
     @Column(name = "id")
