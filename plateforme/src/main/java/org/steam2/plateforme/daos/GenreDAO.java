@@ -19,6 +19,19 @@ public class GenreDAO {
     }
 
     /**
+     * Persister une entité Genre dans la base
+     * @param genre l'entité à persister
+     * @author Wilhem
+     */
+    public void persister(Genre genre) {
+        try (EntityManager em = emf.createEntityManager()) {
+            em.getTransaction().begin();
+            em.persist(genre);
+            em.getTransaction().commit();
+        }
+    }
+
+    /**
      * Récupère un genre selon son nom exacte
      * @param nomGenre nom du genre
      * @return l'élément associé, null si non trouvé

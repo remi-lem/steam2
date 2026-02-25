@@ -7,6 +7,7 @@ import org.steam2.plateforme.entites.JeuVideo
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
+import org.steam2.plateforme.entites.Genre
 import org.steam2.plateforme.plateforme.entites.type.Plateforme
 import java.math.BigDecimal
 import java.time.Duration
@@ -74,7 +75,22 @@ class RecupererJeuxVideos(private val consumer: KafkaConsumer<String, GenericRec
                         jeu.jeuParent = parent
                     }
 
-                    val genres = genreDAO.getListGenreByNom(listNomGenres)
+                    //liste des genres
+                    val genres = mutableListOf<Genre>()
+                    var genre : Genre
+                    for (nomGenre in listNomGenres){
+                        genre = genreDAO.getGenreByNom(nomGenre)?: run{
+                            //si genre pas trouvé
+                            //créer le genre inexistant
+                            log.info("Genre $nomGenre inexistent! Création du genre dans la base...")
+                            val genre = Genre()
+                            genre.nom = nomGenre
+                            genreDAO.persister(genre)
+                            log.info("Genre $nomGenre ajouté à la base")
+                            genre
+                        }
+                        genres.add(genre)
+                    }
 
                     //warn si des genres ont été perdu
                     if (genres.size != listNomGenres.size){
