@@ -46,6 +46,18 @@ mvn exec:java -f editeur
 
 - Accès à PhpMyAdmin : [http://localhost:9090/](http://localhost:9090/)
 
+Si le lancement dans IntelliJ affiche des erreurs, vider les caches dans : \
+`File > Invalidate caches > Clear file system cache and Local History`
+
+## Réinitialisation de la base de données
+
+Éxécuter :
+```bash
+docker container stop mysql
+docker container rm mysql
+docker volume rm steam2_mysql_data
+```
+
 ## Détails techniques
 
 Ce programme a été codé et testé avec `openjdk-21`
