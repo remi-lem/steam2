@@ -27,4 +27,20 @@ public class GenreDAO {
             em.getTransaction().commit();
         }
     }
+
+    /**
+     * Récupère la liste des genres selon une liste des noms
+     * @param listNoms liste des noms des genres
+     * @return la liste des éléments associés
+     * @author Wilhem
+     */
+    public List<Genre> getListGenreByNom(List<String> listNoms){
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery(
+                            "SELECT g FROM Genre g WHERE g.nom IN :noms",
+                            Genre.class)
+                    .setParameter("noms", listNoms)
+                    .getResultList();
+        }
+    }
 }

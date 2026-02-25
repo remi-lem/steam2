@@ -5,6 +5,10 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entité Commentaire
+ * @author remi
+ */
 @Entity
 @Table(name = "commentaire")
 @Getter
@@ -18,6 +22,10 @@ public class Commentaire {
     @ManyToOne
     @JoinColumn(name = "jeu_id")
     private JeuVideo jeu;
+
+    @ManyToOne
+    @JoinColumn(name = "joueur")
+    private Joueur joueur;
 
     @Column(name = "date")
     private LocalDateTime date;

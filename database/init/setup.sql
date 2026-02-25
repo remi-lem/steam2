@@ -342,3 +342,7 @@ CREATE TABLE joueur_jeu (
     CONSTRAINT fk_joueur_jeu_jeu_id
         FOREIGN KEY (jeu_id) REFERENCES jeu(id)
 );
+
+-- Ajout de joueur dans la base client
+
+INSERT INTO `joueur` (`id`, `username`, `password`, `nom`, `prenom`, `date_naissance`) VALUES (NULL, 'nino', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', 'keravel', 'nino', '2026-02-25 19:34:48.000000'); 

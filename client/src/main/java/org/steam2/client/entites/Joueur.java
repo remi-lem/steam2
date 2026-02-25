@@ -3,10 +3,13 @@ package org.steam2.client.entites;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Entité représentant les joueurs
+ * @author Wilhem
+ */
 @Entity
 @Table(name="joueur")
 @Getter
@@ -14,44 +17,52 @@ import java.util.List;
 public class Joueur {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
+    @Column(name = "id")
     private Integer id;
 
-    @Column(name="pseudo")
-    private String pseudo;
+    @Column(name="username")
+    private String username;
 
-    @Column(name="prenom")
-    private String prenom;
+    @Column(name="password")
+    private String password;
 
     @Column(name="nom")
     private String nom;
 
+    @Column(name="prenom")
+    private String prenom;
+
     @Column(name="date_naissance")
-    Date dateNaissance;
+    private LocalDate date_naissance;
+
+    @Column(name="date_creation")
+    private LocalDate date_creation;
+
+    @OneToMany(mappedBy = "joueur",fetch = FetchType.LAZY)
+    private List<JeuJoueur> bibliotheque;
 
     @ManyToMany
     @JoinTable(
-            name = "joueur_jeu",
-            joinColumns = { @JoinColumn(name = "joueur_id") },
-            inverseJoinColumns = { @JoinColumn(name = "eu_id") }
+            name="amitie",
+            joinColumns = @JoinColumn(name="joueur1_id"),
+            inverseJoinColumns = @JoinColumn(name="joueur2_id")
     )
-    private List<JeuVideo> bibliotheque;
+    private List<Joueur> amis;
 
-    @OneToMany(mappedBy = "joueur")
-    private List<Session> sessions;
+    @ManyToMany
+    @JoinTable(
+            name="abonnement",
+            joinColumns = @JoinColumn(name="joueur_id"),
+            inverseJoinColumns = @JoinColumn(name="editeur_id")
+    )
+    private List<Editeur> abonnements;
 
-    @Column(name="solde")
-    private Float solde;
+    @OneToMany(mappedBy = "joueur", fetch = FetchType.LAZY)
+    private List<Commentaire> commentaires;
 
-    /**
-     * Ajoute de l'argent au solde du joueur
-     * @param quantite argent a ajouter
-     * @return la nouvelle valeur du solde
-     * @throws IllegalArgumentException si quantité <= 0
-     */
-    public float rechargeSolde(float quantite) throws IllegalArgumentException{
-        if (quantite <= 0) throw new IllegalArgumentException("Can't add negative or null amont");
-        solde += quantite;
-        return solde;
+    //Pour création à la date du jour
+    @PrePersist
+    protected void onCreate() {
+        this.date_creation = LocalDate.now();
     }
 }

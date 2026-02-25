@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="MainKt" type="JetRunConfigurationType" nameIsGenerated="true">
-    <option name="MAIN_CLASS_NAME" value="org.steam2.client.org.steam2.client.MainKt" />
+    <option name="MAIN_CLASS_NAME" value="org.steam2.client.MainKt" />
     <module name="client.main" />
     <shortenClasspath name="NONE" />
     <method v="2">
