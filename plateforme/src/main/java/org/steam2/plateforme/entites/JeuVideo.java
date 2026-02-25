@@ -1,11 +1,10 @@
-package entites;
+package org.steam2.plateforme.entites;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.steam2.plateforme.plateforme.entites.type.Plateforme;
-import entites.Editeur;
-import entites.Genre;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -60,6 +59,9 @@ public class JeuVideo {
 
     @OneToMany(mappedBy = "jeu", fetch = FetchType.LAZY)
     private List<Incident> incidents;
+
+    @OneToMany(mappedBy = "jeuVideo", cascade = CascadeType.ALL)
+    private List<JeuJoueur> joueurs;
 
     @Override
     public String toString() {

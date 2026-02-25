@@ -1,8 +1,7 @@
-package entites;
+package org.steam2.plateforme.entites;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import entites.JeuVideo;
 import lombok.Setter;
 
 import java.util.List;

@@ -1,9 +1,9 @@
-package daos;
+package org.steam2.plateforme.daos;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import java.util.List;
-import entites.Commentaire;
+import org.steam2.plateforme.entites.Commentaire;
 
 /**
  * Data Access Object de Commentaire

@@ -1,10 +1,9 @@
 package org.steam2.plateforme.application
 
-import daos.EditeurDAO
-import daos.GenreDAO
-import daos.JeuVideoDAO
-import entites.Genre
-import entites.JeuVideo
+import org.steam2.plateforme.daos.EditeurDAO
+import org.steam2.plateforme.daos.GenreDAO
+import org.steam2.plateforme.daos.JeuVideoDAO
+import org.steam2.plateforme.entites.JeuVideo
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
@@ -42,14 +41,14 @@ class RecupererJeuxVideos(private val consumer: KafkaConsumer<String, GenericRec
                     val genericJeu: GenericRecord = record.value()
 
                     val jeu_id = genericJeu.get("id") as Int
-                    val jeu_nom = genericJeu.get("nom") as String
+                    val jeu_nom = genericJeu.get("nom").toString()
                     val editeur_id = genericJeu.get("editeur_id") as Int
-                    val prix_editeur = genericJeu.get("prix") as BigDecimal
+                    val prix_editeur = BigDecimal.valueOf((genericJeu.get("prix") as Float).toDouble())
 
-                    val plateformeStr = genericJeu.get("plateforme") as String
-                    val jeu_parent_id = genericJeu.get("parent_id") as? Int
+                    val plateformeStr = genericJeu.get("plateforme").toString()
+                    val jeu_parent_id = genericJeu.get("jeu_parent_id") as? Int
 
-                    val listNomGenres = (genericJeu.get("genres") as List<*>).map {it as String}
+                    val listNomGenres = (genericJeu.get("genres") as List<*>).map {it.toString()}
 
                     //check si jeu existant
                     var jeu = jeuVideoDAO.getJeuVideoById(jeu_id)

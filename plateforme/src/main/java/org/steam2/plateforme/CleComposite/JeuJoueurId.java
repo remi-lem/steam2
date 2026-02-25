@@ -1,4 +1,4 @@
-package entites.CleComposite;
+package org.steam2.plateforme.CleComposite;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -9,14 +9,14 @@ import java.util.Objects;
  */
 public class JeuJoueurId implements Serializable {
 
-    private Integer jeu_id;
-    private Integer joueur_id;
+    private Integer jeuVideo;
+    private Integer joueur;
 
     public JeuJoueurId() {}
 
     public JeuJoueurId(Integer jeuId, Integer joueurId){
-        this.jeu_id = jeuId;
-        this.joueur_id = joueurId;
+        this.jeuVideo = jeuId;
+        this.joueur = joueurId;
     }
 
 
@@ -25,11 +25,11 @@ public class JeuJoueurId implements Serializable {
         if (this == o) return true;
         if (!(o instanceof JeuJoueurId)) return false;
         JeuJoueurId other = (JeuJoueurId) o;
-        return Objects.equals(jeu_id, other.jeu_id) && Objects.equals(joueur_id, other.joueur_id);
+        return Objects.equals(jeuVideo, other.jeuVideo) && Objects.equals(joueur, other.joueur);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(jeu_id,joueur_id);
+        return Objects.hash(jeuVideo, joueur);
     }
 }

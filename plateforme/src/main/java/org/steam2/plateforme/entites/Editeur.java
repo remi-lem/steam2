@@ -1,4 +1,4 @@
-package entites;
+package org.steam2.plateforme.entites;
 
 import jakarta.persistence.*;
 import lombok.Getter;

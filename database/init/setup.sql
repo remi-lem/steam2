@@ -110,7 +110,7 @@ VALUES ('INDEPENDANT',
 USE steam2_plateforme;
 
 CREATE TABLE editeur (
-    id INT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     type VARCHAR(50) NOT NULL,
     nom VARCHAR(50) NOT NULL UNIQUE
 );
@@ -223,6 +223,14 @@ CREATE TABLE abonnement (
     CONSTRAINT fk_abonnement_editeur_id
         FOREIGN KEY (editeur_id) REFERENCES editeur(id)
 );
+
+-- INSERTION DE DONNEES DANS LA BASE PLATEFORME
+
+INSERT INTO editeur(type,
+                    nom)
+VALUES ('INDEPENDANT',
+        'remiCorp'
+       );
 
 
 -- CREATION DES TABLES POUR LE CLIENT

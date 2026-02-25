@@ -1,7 +1,8 @@
-package daos;
+package org.steam2.plateforme.daos;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import org.steam2.plateforme.entites.Editeur;
 
 /**
  * Data Access Object des éditeurs
@@ -21,9 +22,9 @@ public class EditeurDAO {
      * @return l'entité Jeu Vidéo correspondante
      * @author Wilhem
      */
-    public entites.Editeur getEditeurById(Integer id) {
+    public Editeur getEditeurById(Integer id) {
         try (EntityManager em = emf.createEntityManager()) {
-            return em.find(entites.Editeur.class, id);
+            return em.find(Editeur.class, id);
         }
     }
 }

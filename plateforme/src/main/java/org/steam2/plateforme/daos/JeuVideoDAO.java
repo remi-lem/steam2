@@ -1,6 +1,6 @@
-package daos;
+package org.steam2.plateforme.daos;
 
-import entites.JeuVideo;
+import org.steam2.plateforme.entites.JeuVideo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 

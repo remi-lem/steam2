@@ -1,11 +1,10 @@
-package entites;
+package org.steam2.plateforme.entites;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -41,7 +40,7 @@ public class Joueur {
     private LocalDate date_creation;
 
     @OneToMany(mappedBy = "joueur",fetch = FetchType.LAZY)
-    private List<JeuVideo> bibliotheque;
+    private List<JeuJoueur> bibliotheque;
 
     @ManyToMany
     @JoinTable(

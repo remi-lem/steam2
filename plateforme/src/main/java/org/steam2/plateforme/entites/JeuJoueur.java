@@ -1,4 +1,4 @@
-package entites;
+package org.steam2.plateforme.entites;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import java.time.LocalTime;
  */
 @Entity
 @Table(name="jeu_joueur")
-@IdClass(entites.CleComposite.JeuJoueurId.class)
+@IdClass(org.steam2.plateforme.CleComposite.JeuJoueurId.class)
 @Getter
 @Setter
 public class JeuJoueur {

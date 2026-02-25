@@ -1,8 +1,8 @@
-package daos;
+package org.steam2.plateforme.daos;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import entites.Genre;
+import org.steam2.plateforme.entites.Genre;
 
 import java.util.List;
 
