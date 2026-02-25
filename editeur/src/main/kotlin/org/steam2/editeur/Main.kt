@@ -16,6 +16,7 @@ import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
+import org.steam2.editeur.application.EnvoiJeux
 import org.steam2.editeur.daos.CommentaireDAO
 import org.steam2.editeur.application.Menus
 import org.steam2.editeur.application.RecupererIncidents
@@ -47,17 +48,30 @@ fun main() = runBlocking {
 
     // Récupération du paramétrage Kafka
     val propsCommentaires = Properties()
-    val inputStreamCommentaires = Thread.currentThread().contextClassLoader.getResourceAsStream("kafkaCommentaires.properties")
+    val inputStreamCommonCommentaires = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/common.properties")
+    val inputStreamCommentaires = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/commentaires.properties")
+    propsCommentaires.load(inputStreamCommonCommentaires)
     propsCommentaires.load(inputStreamCommentaires)
     val topicCommentaires = propsCommentaires.getProperty("topic.name")
 
     val propsIncidents = Properties()
-    val inputStreamIncidents = Thread.currentThread().contextClassLoader.getResourceAsStream("kafkaIncidents.properties")
+    val inputStreamCommonIncidents = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/common.properties")
+    val inputStreamIncidents = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/incidents.properties")
+    propsIncidents.load(inputStreamCommonIncidents)
     propsIncidents.load(inputStreamIncidents)
     val topicIncidents = propsIncidents.getProperty("topic.name")
 
+    val propsJeux = Properties()
+    val inputStreamCommonJeux = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/common.properties")
+    val inputStreamJeux = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/jeux.properties")
+    propsJeux.load(inputStreamCommonJeux)
+    propsJeux.load(inputStreamJeux)
+    val topicJeux = propsJeux.getProperty("topic.name")
+
     // Kafka
-    val producerCommentaires = KafkaProducer<String, GenericRecord>(propsCommentaires)
+    val producerJeux = KafkaProducer<String, GenericRecord>(propsJeux)
+    val serviceEnvoiJeux = EnvoiJeux(producerJeux, topicJeux, jeuVideoDAO)
+
     val consumerCommentaires = KafkaConsumer<String, GenericRecord>(propsCommentaires)
     consumerCommentaires.subscribe(listOf(topicCommentaires))
 
@@ -69,7 +83,7 @@ fun main() = runBlocking {
     val screen = TerminalScreen(terminal)
     screen.startScreen()
     val gui = MultiWindowTextGUI(screen)
-    val menus = Menus(gui, editeurDAO, commentaireDAO, incidentDAO, jeuVideoDAO, genreDAO, versionDAO)
+    val menus = Menus(gui, editeurDAO, commentaireDAO, incidentDAO, jeuVideoDAO, genreDAO, versionDAO, serviceEnvoiJeux)
 
     log.info("L'application est prête")
 
@@ -109,8 +123,8 @@ fun main() = runBlocking {
     emf.close()
     AbandonedConnectionCleanupThread.checkedShutdown()
     //kafka
-    producerCommentaires.flush()
-    producerCommentaires.close()
+    producerJeux.flush()
+    producerJeux.close()
     //fenetre
     screen.close()
     //services

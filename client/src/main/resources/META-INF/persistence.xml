@@ -6,15 +6,23 @@
 
   <persistence-unit name="steam2-client">
 
-
-
+    <class>org.steam2.client.entites.Editeur</class>
+    <class>org.steam2.client.entites.JeuVideo</class>
+    <class>org.steam2.client.entites.Genre</class>
+    <class>org.steam2.client.entites.VersionJeu</class>
+    <class>org.steam2.client.entites.Commentaire</class>
+    <class>org.steam2.client.entites.Joueur</class>
+    <class>org.steam2.client.entites.Incident</class>
+    <class>org.steam2.client.entites.Session</class>
+    <class>org.steam2.client.entites.JeuJoueur</class>
+    <class>org.steam2.client.entites.Commentaire</class>
 
     <properties>
       <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver" />
       <property name="jakarta.persistence.jdbc.url"    value="jdbc:mysql://localhost:3366/steam2_client" />
       <property name="jakarta.persistence.jdbc.user"   value="client" />
-      <property name="jakarta.persistence.jdbc.password" value="acces_a_creer" />
-<!--      <property name="hibernate.show_sql"   value="true" />-->
+      <property name="jakarta.persistence.jdbc.password" value="KuSAc73Y41dMeD7AoaDV" />
+      <!--      <property name="hibernate.show_sql"   value="true" />-->
       <property name="hibernate.format_sql" value="true" />
     </properties>
   </persistence-unit>

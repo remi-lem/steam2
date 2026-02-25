@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="creerCommentaires" type="JUnit" factoryName="JUnit">
-    <module name="editeur" />
+    <module name="editeur.test" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="org.steam2.editeur.daos.*" />

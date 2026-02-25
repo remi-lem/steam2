@@ -5,7 +5,14 @@
              https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
 
   <persistence-unit name="steam2-plateforme">
-
+    <class>org.steam2.plateforme.entites.Commentaire</class>
+    <class>org.steam2.plateforme.entites.Editeur</class>
+    <class>org.steam2.plateforme.entites.Genre</class>
+    <class>org.steam2.plateforme.entites.Incident</class>
+    <class>org.steam2.plateforme.entites.JeuJoueur</class>
+    <class>org.steam2.plateforme.entites.JeuVideo</class>
+    <class>org.steam2.plateforme.entites.Joueur</class>
+    <class>org.steam2.plateforme.entites.VersionJeu</class>
 
 
 
@@ -13,7 +20,7 @@
       <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver" />
       <property name="jakarta.persistence.jdbc.url"    value="jdbc:mysql://localhost:3366/steam2_plateforme" />
       <property name="jakarta.persistence.jdbc.user"   value="plateforme" />
-      <property name="jakarta.persistence.jdbc.password" value="acces_a_creer" />
+      <property name="jakarta.persistence.jdbc.password" value="sjNf6ANS257Kf84cjXi0" />
 <!--      <property name="hibernate.show_sql"   value="true" />-->
       <property name="hibernate.format_sql" value="true" />
     </properties>

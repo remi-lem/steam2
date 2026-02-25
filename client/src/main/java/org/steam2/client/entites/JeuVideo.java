@@ -1,24 +1,24 @@
-package org.steam2.editeur.entites;
+package org.steam2.client.entites;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.steam2.editeur.entites.type.Plateforme;
-
+import org.steam2.client.entites.*;
 import java.math.BigDecimal;
 import java.util.List;
+import org.steam2.client.entites.type.*;
 
 /**
  * Entité JeuVideo
- * @author remi
+ * @author Wilhem
  */
+
 @Entity
 @Table(name = "jeu")
 @Getter
 @Setter
 public class JeuVideo {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
 
@@ -28,9 +28,6 @@ public class JeuVideo {
 
     @Column(name = "nom")
     private String nom;
-
-    @Column(name = "prix")
-    private BigDecimal prix;
 
     @Column(name = "plateforme")
     @Enumerated(EnumType.STRING)
@@ -43,11 +40,14 @@ public class JeuVideo {
     @OneToMany(mappedBy = "jeuParent")
     private List<JeuVideo> dlcs;
 
+    @Column(name="prix_editeur")
+    private BigDecimal prix_editeur;
+
     @ManyToMany
     @JoinTable(
-        name = "jeu_genre",
-        joinColumns = { @JoinColumn(name = "jeu_id") },
-        inverseJoinColumns = { @JoinColumn(name = "genre_id") }
+            name = "jeu_genre",
+            joinColumns = { @JoinColumn(name = "jeu_id") },
+            inverseJoinColumns = { @JoinColumn(name = "genre_id") }
     )
     private List<Genre> genres;
 
@@ -60,7 +60,11 @@ public class JeuVideo {
     @OneToMany(mappedBy = "jeu", fetch = FetchType.LAZY)
     private List<Incident> incidents;
 
+    @OneToMany(mappedBy = "jeuVideo", cascade = CascadeType.ALL)
+    private List<JeuJoueur> joueurs;
+
     @Override
     public String toString() {
         return this.nom;
-    }}
+    }
+}
