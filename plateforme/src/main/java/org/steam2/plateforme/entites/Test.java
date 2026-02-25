@@ -1,4 +1,6 @@
-public class Test {
+package org.steam2.plateforme.entites;
+
+import org.steam2.plateforme.entites.Game;public class Test {
     public static void main(String[] args) {
         Game jeu1 = new Game("2048","Jules Couture",4.99);
         Game jeu2 = new Game("Solitaire", GameType.SIMULATION,"Jules Couture",9.99);

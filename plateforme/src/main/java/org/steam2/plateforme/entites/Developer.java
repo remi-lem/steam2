@@ -1,7 +1,19 @@
+package org.steam2.plateforme.entites;
+
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
+/*
+@author : Jules
+ */
+@Table(name = "compteDev")
+@Getter
+@Setter
 public class Developer implements Account {
     private static final Scanner SCANNER = new Scanner(System.in);
     ArrayList<GameType> TAGLIST = new ArrayList<>(Arrays.asList(GameType.values()));

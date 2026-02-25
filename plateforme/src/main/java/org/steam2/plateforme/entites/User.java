@@ -1,15 +1,44 @@
+package org.steam2.plateforme.entites;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/*
+Implementation d'une classe Utilisateur sur la plateforme
+@author : Jules
+ */
+@Entity
+@Table(name = "compteUtilisateur")
+@Getter
+@Setter
 public class User implements Account{
     // Scanner commun pour toutes les instances
     private final static Scanner SCANNER = new Scanner(System.in);
 
+    @Id
+    private Long id;
+
     // Attributs des comptes utilisateurs
+    @Column(name = "pseudo")
     private String name;
+
+    @Column(name = "email")
     private String email;
+
+    @Column(name = "password")
     private String password;
+
+    @Column(name = "balance")
     private double balance;
+
+    @Column(name = "collection")
     private ArrayList<Game> collection;
 
     // *****************
@@ -31,7 +60,7 @@ public class User implements Account{
 
     // ************************
     // ** Acquisition de jeu **
-    private boolean isPossibleToAddGame(Game game){
+    private boolean isPossibleToAddGame(org.steam2.plateforme.entites.Game game){
         /*
         Vérification de la possibilité de paiement
         Cas vérifié :
@@ -45,7 +74,7 @@ public class User implements Account{
         return !(balance < game.getPrice());
 
     }
-    private boolean gamePayment(Game game){
+    private boolean gamePayment(org.steam2.plateforme.entites.Game game){
         /*
         Procédure de paiement du jeu et ajout à sa bibliothèque
          */
@@ -59,7 +88,7 @@ public class User implements Account{
         }
     }
 
-    public boolean addGame(Game game){
+    public boolean addGame(org.steam2.plateforme.entites.Game game){
         /*
         Méthode d'ajout de jeu à la bibliothèque utilisateur via boite de dialogue et paiement
 

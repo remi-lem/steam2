@@ -1,3 +1,8 @@
+package org.steam2.plateforme.entites;
+
+/*
+Codé par Jules
+ */
 public enum GameType {
     ACTION, ADVENTURE, FIGHTING, HORROR, MMORPG, MOBA, PLATEFORMER, PUZZLE,
     RACING, RPGS, SANDBOX, SIMULATION, SHOOTER, SPORTS, SURVIVAL;

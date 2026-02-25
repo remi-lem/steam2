@@ -1,18 +1,23 @@
-import lombok.Getter;
+package org.steam2.plateforme.entites;
 
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+/*
+@author : Jules
+ */
+@Table(name = "jeux")
+@Getter
+@Setter
 public class Game {
 
     private static int numberOfGame;
 
-    @Getter
     private int id;
-    @Getter
     private String name;
-    @Getter
-    private GameType[] types; // Remplacer le type par un Enum
-    @Getter
+    private GameType[] types;
     private String developer;
-    @Getter
     private double price;
 
     public Game (String name, String developer, double price) {
