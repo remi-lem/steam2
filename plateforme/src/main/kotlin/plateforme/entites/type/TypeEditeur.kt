@@ -1,4 +1,4 @@
-package org.steam2.plateforme.plateforme.entites.type
+package org.steam2.plateforme.entites.type
 
 /**
  * Enumération des types d'éditeurs

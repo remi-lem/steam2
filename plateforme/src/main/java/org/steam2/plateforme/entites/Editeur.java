@@ -3,7 +3,7 @@ package org.steam2.plateforme.entites;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.steam2.plateforme.plateforme.entites.type.TypeEditeur;
+import org.steam2.plateforme.entites.type.TypeEditeur;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package org.steam2.plateforme.application
+package org.steam2.plateforme.plateforme.application
 
 import com.googlecode.lanterna.gui2.BasicWindow
 import com.googlecode.lanterna.gui2.Button
@@ -11,13 +11,27 @@ import com.googlecode.lanterna.gui2.dialogs.ActionListDialogBuilder
 import com.googlecode.lanterna.gui2.dialogs.MessageDialog
 import com.googlecode.lanterna.input.KeyStroke
 import com.googlecode.lanterna.terminal.Terminal
+import kotlinx.coroutines.CoroutineScope
 import org.slf4j.LoggerFactory
+import org.steam2.plateforme.daos.CommentaireDAO
+import org.steam2.plateforme.daos.EditeurDAO
+import org.steam2.plateforme.daos.GenreDAO
+import org.steam2.plateforme.daos.JeuVideoDAO
 
 /**
  * Classe gérant tous les menus différents de l'application Plateforme
  * @author : Jules
  */
-class PlateformMenus(private val gui: MultiWindowTextGUI, private var terminal: Terminal) {
+class PlateformMenus(
+        private val gui: MultiWindowTextGUI,
+        private val editeurDAO: EditeurDAO,
+        private val jeuVideoDAO: JeuVideoDAO,
+        private val genreDAO: GenreDAO,
+        private val commentaireDAO: CommentaireDAO,
+        private val serviceScopeJeux: CoroutineScope,
+        private val serviceRecuperationJeux: RecupererJeuxVideos
+    ) {
+
     private val log = LoggerFactory.getLogger(PlateformMenus::class.java)
 
     /**
@@ -38,6 +52,7 @@ class PlateformMenus(private val gui: MultiWindowTextGUI, private var terminal: 
                         // menuPublicationJeu(false)
                         // TODO : Affichage de la liste des jeux -> La récupérer
                         log.info("Liste des jeux")
+                        menuVGList()
                     }
                     .addAction("Rechercher un jeu") {
                         log.info("Recherche de jeux")
@@ -74,6 +89,47 @@ class PlateformMenus(private val gui: MultiWindowTextGUI, private var terminal: 
         }
     }
 
+    /**
+     * Menu permettant d'obtenir les jeux vidéos disponibles
+     *
+     * @author : Jules
+     */
+    fun menuVGList(){
+        var exitVGListe = false
+        while(!exitVGListe) {
+            try {
+                // Liste des options possibles
+                ActionListDialogBuilder()
+                    .setTitle("- Liste des jeux vidéos-")
+                    .setDescription("Choisissez une action :")
+                    .setCanCancel(false)
+                    .addAction("Afficher par date d'ajout") {
+                        // TODO : Résupérer la liste des jeux par ordre anti-chronologique
+                        log.info("Affichage date d'ajout")
+
+                        // Etape 1 : Afficher la liste des jeux dans la console
+                        log.info(jeuVideoDAO.getJeux(0).toString())
+                    }
+                    .addAction("Afficher par ordre alphabétique") {
+                        // TODO : Récupérer la liste par ordre alpha
+                        // TODO : Dans le fichier DAO, faire une requête triée par ordre alpha
+                        log.info("Affichage ordre alpha")
+                    }
+                    .addAction("Afficher par popularité") {
+                        // TODO : Récupérer la liste des jeux par rapport à leur popularité
+                        // TODO : Mettre en place un système de vote / ranking
+                        log.info("Affichage par avis")
+                    }.addAction("Fermer le menu") {
+                        exitVGListe = true
+                    }
+                    .build()
+                    .showDialog(gui)
+            } catch (e: Exception) {
+                log.error("Error in main plateform menus", e)
+                MessageDialog.showMessageDialog(gui, "Erreur fatale", e.message)
+            }
+        }
+    }
     fun menuFriends(){
         var exitFriendsMenu = false
         while(!exitFriendsMenu) {
@@ -152,6 +208,9 @@ class PlateformMenus(private val gui: MultiWindowTextGUI, private var terminal: 
      * - Changer d'adresse mail
      * - Changer de mot de passe
      *
+     * TODO : Pas de DAO Joueur ? On ne peut pas faire de requête ?
+     * TODO : Pas d'élément adresse mail ? On s'en fiche de sa date de naissance
+     *
      * @author : Jules
      */
     fun menuManageAccount(){
@@ -193,6 +252,7 @@ class PlateformMenus(private val gui: MultiWindowTextGUI, private var terminal: 
      *
      * Création d'une fênetre permettant la saisie d'un nom de jeu
      * TODO : Faire la recherche
+     * TODO : Faire une requête dans DAO pour trier par nom par rapport à un nom donnée et pas que par ID
      *
      * @author : Jules
      */

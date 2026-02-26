@@ -48,10 +48,13 @@ public class JeuVideoDAO {
      * @param page numéro de la page (0 = première page)
      * @return une liste de {@value #MAX_RESULTS} jeux
      * @author Wilhem
+     *
+     * TODO : Faire en sorte que si pas d'argument {page} -> =0 de base
+     * TODO : Ici la table est "Jeu" avec majuscule mais dans le sql c'est "jeu"
      */
     public List<JeuVideo> getJeux(Integer page){
         try (EntityManager em = emf.createEntityManager()) {
-            return em.createQuery("SELECT j FROM Jeu j ", JeuVideo.class)
+            return em.createQuery("SELECT j FROM jeu j ", JeuVideo.class)
                     .setFirstResult(page* MAX_RESULTS)
                     .setMaxResults(MAX_RESULTS)
                     .getResultList();

@@ -1,24 +1,25 @@
-package org.steam2.plateforme.application
+package org.steam2.plateforme.plateforme.application
 
-import org.steam2.plateforme.daos.EditeurDAO
-import org.steam2.plateforme.daos.GenreDAO
-import org.steam2.plateforme.daos.JeuVideoDAO
-import org.steam2.plateforme.entites.JeuVideo
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
+import org.steam2.plateforme.daos.EditeurDAO
+import org.steam2.plateforme.daos.GenreDAO
+import org.steam2.plateforme.daos.JeuVideoDAO
 import org.steam2.plateforme.entites.Genre
+import org.steam2.plateforme.entites.JeuVideo
+import org.steam2.plateforme.entites.type.TypeEditeur
 import org.steam2.plateforme.plateforme.entites.type.Plateforme
 import java.math.BigDecimal
 import java.time.Duration
-
 
 /**
  * Récupérer les jeux vidéos
  * @author Wilhem
  */
 class RecupererJeuxVideos(private val consumer: KafkaConsumer<String, GenericRecord>,
-                          private val jeuVideoDAO: JeuVideoDAO, private val editeurDAO: EditeurDAO, private val genreDAO: GenreDAO) {
+                          private val jeuVideoDAO: JeuVideoDAO, private val editeurDAO: EditeurDAO, private val genreDAO: GenreDAO
+) {
 
     companion object {
         const val DELAI_ATTENTE : Long = 5000; //5s
