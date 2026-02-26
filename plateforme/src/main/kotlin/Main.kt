@@ -18,9 +18,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
+import org.steam2.plateforme.daos.IncidentDAO
 import org.steam2.plateforme.plateforme.application.RecupererJeuxVideos
 import org.steam2.plateforme.plateforme.application.PlateformMenus
+import org.steam2.plateforme.plateforme.application.TransfererIncidents
 import java.util.Properties
 
 private val log = LoggerFactory.getLogger("Main")
@@ -34,6 +37,7 @@ fun main() = runBlocking {
     val jeuVideoDAO = JeuVideoDAO(emf)
     val genreDAO = GenreDAO(emf)
     val commentaireDAO = CommentaireDAO(emf)
+    val incidentDAO = IncidentDAO(emf)
 
     //paramètres Kafka
     val propsJeux = Properties()
@@ -43,10 +47,27 @@ fun main() = runBlocking {
     propsJeux.load(inputStreamJeux)
     val topicJeux = propsJeux.getProperty("topic.name")
 
+    val propsIncidents = Properties()
+    val inputStreamCommonIncidents = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/common.properties")
+    val inputStreamIncidents = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/incidents.properties")
+    propsIncidents.load(inputStreamCommonIncidents)
+    propsIncidents.load(inputStreamIncidents)
+    val topicIncidents = propsIncidents.getProperty("topic.name")
+
+    val propsCommentaires = Properties()
+    val inputStreamCommonCommentaires = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/common.properties")
+    val inputStreamCommentaires = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/commentaires.properties")
+    propsCommentaires.load(inputStreamCommonCommentaires)
+    propsCommentaires.load(inputStreamCommentaires)
+    val topicCommentaires = propsCommentaires.getProperty("topic.name")
 
     //Kafka
     val consumerJeux = KafkaConsumer<String, GenericRecord>(propsJeux)
     consumerJeux.subscribe(listOf(topicJeux))
+
+    val consumerIncidents = KafkaConsumer<String, GenericRecord>(propsIncidents)
+    consumerIncidents.subscribe(listOf(topicIncidents))
+    val producerIncidents = KafkaProducer<String, GenericRecord>(propsIncidents)
 
 
     log.info("L'application Plateforme est prête")
@@ -59,6 +80,14 @@ fun main() = runBlocking {
 
     val jobServiceJeux = serviceScopeJeux.launch(Dispatchers.IO) {
         serviceRecuperationJeux.launch()
+    }
+
+    //Incidents
+    val serviceScopeIncidents = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    val serviceTransfereIncidents = TransfererIncidents(consumerIncidents, producerIncidents, topicIncidents, incidentDAO, jeuVideoDAO)
+
+    val jobServiceIncidents = serviceScopeIncidents.launch(Dispatchers.IO) {
+        serviceTransfereIncidents.launch()
     }
 
     // Préparation de l'interface (fenêtre)
@@ -87,15 +116,24 @@ fun main() = runBlocking {
     emf.close()
     AbandonedConnectionCleanupThread.checkedShutdown()
     //kafka
+    producerIncidents.flush()
+    producerIncidents.close()
+
     //fenetre
     screen.close()
 
     //services
     serviceRecuperationJeux.stop()
+    serviceRecuperationJeux.stop()
     log.info("Attente de la fermeture des services de récupération des jeux... " +
             "(${RecupererJeuxVideos.DELAI_ATTENTE * 2 / 1000} secondes max)")
     jobServiceJeux.join()
     serviceScopeJeux.cancel()
+    log.info("Attente de la fermeture des services de récupération des jeux... " +
+            "(${TransfererIncidents.DELAI_ATTENTE * 2 / 1000} secondes max)")
+    jobServiceIncidents.join()
+    serviceScopeIncidents.cancel()
+
 
     log.info("Merci d'avoir utilisé notre application !")
 }
