@@ -5,14 +5,19 @@ import com.googlecode.lanterna.gui2.*
 import com.googlecode.lanterna.gui2.dialogs.ActionListDialogBuilder
 import com.googlecode.lanterna.gui2.dialogs.MessageDialog
 import org.slf4j.LoggerFactory
+import org.steam2.client.daos.CommentaireDAO
 import org.steam2.client.daos.JeuJoueurDAO
 import org.steam2.client.daos.JeuVideoDAO
 import org.steam2.client.daos.JoueurDAO
+import org.steam2.client.entites.Commentaire
 import org.steam2.client.entites.JeuJoueur
 import org.steam2.client.entites.JeuVideo
 import org.steam2.client.entites.Joueur
 import org.steam2.client.exceptions.LoginException
 import java.nio.charset.StandardCharsets
+import java.sql.Date
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -23,8 +28,9 @@ class Menus (
     private val gui: MultiWindowTextGUI,
     private val joueurDAO: JoueurDAO,
     private val jeuVideoDAO: JeuVideoDAO,
-    private val jeuJoueurDAO: JeuJoueurDAO
-
+    private val jeuJoueurDAO: JeuJoueurDAO,
+    private val commentaireDAO: CommentaireDAO,
+    private val envoiCommentaires: EnvoiCommentaires
 ) {
     private val log = LoggerFactory.getLogger(Menus::class.java)
 
@@ -167,8 +173,6 @@ class Menus (
         builder.build().showDialog(gui)
     }
 
-
-
     /**
      * Ouvre une fenètre pour afficher les informations sur un jeu
      * @param jeuVideoConsute le jeu à afficher
@@ -189,9 +193,11 @@ class Menus (
                 TODO("Implementer la visualisation des DLCs")
             //menuAfficherDLCs(jeuVideoConsute)
             }
+            actionsBuilder.addAction("Envoyer un commentaire") { menuPublierCommentaire(jeuVideoConsute) }
         } else if (joueurCourant.solde >= jeuVideoConsute.prix_editeur) {
             actionsBuilder.addAction ("Acheter (prix:${jeuVideoConsute.prix_editeur}"){
                 joueurCourant.solde = joueurCourant.solde.subtract(jeuVideoConsute.prix_editeur)
+                joueurDAO.merge(joueurCourant);
                 val achat = JeuJoueur().apply {
                     jeuVideo = jeuVideoConsute
                     joueur = joueurCourant
@@ -211,8 +217,50 @@ class Menus (
     }
 
     fun menuPublierCommentaire(jeuVideoACommenter: JeuVideo){
-        val actionBuilder = ActionListDialogBuilder()
+        val window = BasicWindow("Bublier un commentaire sur ${jeuVideoACommenter.nom}")
+        window.setHints(listOf(Window.Hint.CENTERED))
 
+        val panel = Panel(GridLayout(2))
+
+        panel.addComponent(Label("Commentaire : "))
+        val txtCommentaire = TextBox().addTo(panel)
+
+        panel.addComponent(EmptySpace())
+
+        val btnPanel = Panel(LinearLayout(Direction.HORIZONTAL))
+
+        val btnValider = Button("Envoyer") {
+            if (txtCommentaire.text.isBlank()){
+                MessageDialog.showMessageDialog(gui,"Erreur", "Commentaire vide")
+            } else {
+                // Nouveau Commentaire
+                val nouveauCommentaire = Commentaire().apply {
+                    commentaire = txtCommentaire.text
+                    jeu = jeuVideoACommenter
+                    joueur = joueurCourant
+                    date = LocalDateTime.now();
+                }
+                try {
+                    commentaireDAO.persister(nouveauCommentaire)
+                    envoiCommentaires.envoyer(commentaire = nouveauCommentaire)
+                    log.info("${joueurCourant.nom} à envoyé un commentaire sur ${jeuVideoACommenter.nom} : ${txtCommentaire.text}")
+                    MessageDialog.showMessageDialog(gui,"Succès", "Commentaire publié sur ${jeuVideoACommenter.nom}")
+                    window.close()
+                } catch (e: Exception) {
+                    MessageDialog.showMessageDialog(gui, "Erreur sql", e.message ?: "Erreur inconnue")
+                    log.error(e.stackTrace.toString())
+                    throw e;
+                }
+            }
+        }
+
+        val btnAnnuler = Button("Annuler") {window.close()}
+        btnPanel.addComponent(btnValider)
+        btnPanel.addComponent(btnAnnuler)
+        panel.addComponent(btnPanel)
+
+        window.component = panel
+        gui.addWindowAndWait(window)
     }
 
     fun login() : Joueur? {

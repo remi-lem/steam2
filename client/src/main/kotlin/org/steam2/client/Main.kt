@@ -13,7 +13,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
+import org.steam2.client.application.EnvoiCommentaires
 import org.steam2.client.application.Menus
 import org.steam2.client.application.RecupJeu
 import org.steam2.client.daos.*;
@@ -33,15 +35,26 @@ fun main() = runBlocking {
     val jeuJoueurDAO = JeuJoueurDAO(emf)
     // Récupération du paramétrage Kafka
     val propsJeuxKafka = Properties()
-    val inputStream = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka.properties")
+    val inputStreamCommonJeux = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka.properties")
     val inputStreamJeux = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/jeux.properties")
-    propsJeuxKafka.load(inputStream)
+    propsJeuxKafka.load(inputStreamCommonJeux)
     propsJeuxKafka.load(inputStreamJeux)
     val topicJeux = propsJeuxKafka.getProperty("topic.name")
 
+
+    val propsCommentairesKafka = Properties()
+    val inputStreamCommonCommentaires = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka.properties")
+    val inputStreamCommentaires = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/commentaires.properties")
+    propsCommentairesKafka.load(inputStreamCommonCommentaires)
+    propsCommentairesKafka.load(inputStreamCommentaires)
+    val topicCommentaires = propsCommentairesKafka.getProperty("topic.name")
+
     // Kafka
-    val consumerJeux = KafkaConsumer<String, GenericRecord>(propsJeuxKafka)
+    val consumerJeux = KafkaConsumer<String, GenericRecord>(propsCommentairesKafka)
     consumerJeux.subscribe(listOf(topicJeux))
+
+    val producerCommentaires = KafkaProducer<String, GenericRecord>(propsCommentairesKafka)
+    val serviceEnvoiCommentaires = EnvoiCommentaires(producerCommentaires,topicCommentaires)
 
     // services de récupération Kafka
     val serviceRecupJeu = RecupJeu(consumerJeux, jeuVideoDAO)
@@ -56,7 +69,7 @@ fun main() = runBlocking {
     val screen = TerminalScreen(terminal)
     screen.startScreen()
     val gui = MultiWindowTextGUI(screen)
-    val menus = Menus(gui,joueurDAO,jeuVideoDAO, jeuJoueurDAO)
+    val menus = Menus(gui,joueurDAO,jeuVideoDAO, jeuJoueurDAO, commentaireDAO, serviceEnvoiCommentaires)
     log.info("L'application client est prête")
 
     // lancement de l'interface
@@ -75,13 +88,14 @@ fun main() = runBlocking {
     emf.close()
     AbandonedConnectionCleanupThread.checkedShutdown()
     //kafka
-
+    producerCommentaires.flush()
+    producerCommentaires.close()
     //fenêtre
     screen.close()
 
     // services
     serviceRecupJeu.stop()
-    log.info("Attente de la femeture du service de récupération des jeux...")
+    log.info("Attente de la fermeture du service de récupération des jeux...")
     jobServiceJeu.join()
     serviceScopeJeu.cancel()
 

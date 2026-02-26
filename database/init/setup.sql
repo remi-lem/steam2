@@ -259,14 +259,7 @@ CREATE TABLE version_jeu (
         FOREIGN KEY (jeu_id) REFERENCES jeu(id)
 );
 
-CREATE TABLE commentaire (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    commentaire VARCHAR(1024) NOT NULL,
-    date DATETIME NOT NULL,
-    jeu_id INT NOT NULL,
-    CONSTRAINT fk_commentaire_jeu
-        FOREIGN KEY (jeu_id) REFERENCES jeu(id)
-);
+
 
 CREATE TABLE incident (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -296,6 +289,18 @@ CREATE TABLE joueur (
 	solde DECIMAL(5,2) NOT NULL CHECK (solde>=0),
     date_naissance DATETIME NOT NULL,
 	date_creation DATETIME NOT NULL
+);
+
+CREATE TABLE commentaire (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    commentaire VARCHAR(1024) NOT NULL,
+    date DATETIME NOT NULL,
+    jeu_id INT NOT NULL,
+	joueur_id INT NOT NULL,
+    CONSTRAINT fk_commentaire_jeu
+        FOREIGN KEY (jeu_id) REFERENCES jeu(id),
+	CONSTRAINT fk_commentaire_joueur
+		FOREIGN KEY (joueur_id) REFERENCES joueur(id)
 );
 
 CREATE TABLE session (

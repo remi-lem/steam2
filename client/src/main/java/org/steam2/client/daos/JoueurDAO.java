@@ -29,6 +29,14 @@ public class JoueurDAO {
         }
     }
 
+    public void merge(Joueur joueur){
+        try (EntityManager em = emf.createEntityManager()){
+            em.getTransaction().begin();
+            em.merge(joueur);
+            em.getTransaction().commit();
+        }
+    }
+
     public Joueur identifier(String username, String passhash){
         try (EntityManager em = emf.createEntityManager()){
             TypedQuery<Joueur> q = em.createQuery(
