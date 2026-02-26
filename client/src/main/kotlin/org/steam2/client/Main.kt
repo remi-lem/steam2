@@ -27,10 +27,8 @@ fun main() = runBlocking {
 
     // DAOs
     val emf = Persistence.createEntityManagerFactory("steam2-client")
-    val editeurDAO = EditeurDAO(emf)
     val jeuVideoDAO = JeuVideoDAO(emf)
     val commentaireDAO = CommentaireDAO(emf)
-    val genreDAO = GenreDAO(emf)
     val joueurDAO = JoueurDAO(emf)
     // Récupération du paramétrage Kafka
     val propsJeuxKafka = Properties()
@@ -45,7 +43,7 @@ fun main() = runBlocking {
     consumerJeux.subscribe(listOf(topicJeux))
 
     // services de récupération Kafka
-    val serviceRecupJeu = RecupJeu(consumerJeux,jeuVideoDAO, editeurDAO, genreDAO)
+    val serviceRecupJeu = RecupJeu(consumerJeux,jeuVideoDAO)
     val serviceScopeJeu = CoroutineScope(Dispatchers.IO + SupervisorJob())
     val jobServiceJeu = serviceScopeJeu.launch(Dispatchers.IO){
         log.info("lancement du service de récupération des jeux")

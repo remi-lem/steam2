@@ -5,7 +5,6 @@ import com.googlecode.lanterna.gui2.*
 import com.googlecode.lanterna.gui2.dialogs.ActionListDialogBuilder
 import com.googlecode.lanterna.gui2.dialogs.MessageDialog
 import org.slf4j.LoggerFactory
-import org.steam2.client.daos.EditeurDAO
 import org.steam2.client.daos.JeuVideoDAO
 import org.steam2.client.daos.JoueurDAO
 import org.steam2.client.entites.Joueur

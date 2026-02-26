@@ -237,40 +237,15 @@ VALUES ('INDEPENDANT',
 
 USE steam2_client;
 
-CREATE TABLE editeur (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    type VARCHAR(50) NOT NULL,
-    nom VARCHAR(50) NOT NULL UNIQUE,
-    password CHAR(64) NOT NULL -- hash sha256
-);
 
 CREATE TABLE jeu (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    editeur_id INT NOT NULL,
     nom VARCHAR(50) NOT NULL UNIQUE,
     plateforme VARCHAR(50) NOT NULL,
     jeu_parent_id INT,
     prix_editeur DECIMAL(5,2) NOT NULL CHECK (prix_editeur >=0),
-    CONSTRAINT fk_jeu_editeur_id
-        FOREIGN KEY (editeur_id) REFERENCES editeur(id),
     CONSTRAINT fk_jeu_parent_id
         FOREIGN KEY (jeu_parent_id) REFERENCES jeu(id)
-);
-
-CREATE TABLE genre (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nom VARCHAR(50) NOT NULL UNIQUE
-);
-
-CREATE TABLE jeu_genre (
-    jeu_id INT,
-    genre_id INT,
-    CONSTRAINT pk_jeu_genre
-        PRIMARY KEY (jeu_id, genre_id),
-    CONSTRAINT fk_jeu_genre_jeu_id
-        FOREIGN KEY (jeu_id) REFERENCES jeu(id),
-    CONSTRAINT fk_jeu_genre_genre_id
-        FOREIGN KEY (genre_id) REFERENCES genre(id)
 );
 
 CREATE TABLE version_jeu (

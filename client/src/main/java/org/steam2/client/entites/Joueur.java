@@ -49,13 +49,6 @@ public class Joueur {
     )
     private List<Joueur> amis;
 
-    @ManyToMany
-    @JoinTable(
-            name="abonnement",
-            joinColumns = @JoinColumn(name="joueur_id"),
-            inverseJoinColumns = @JoinColumn(name="editeur_id")
-    )
-    private List<Editeur> abonnements;
 
     @OneToMany(mappedBy = "joueur", fetch = FetchType.LAZY)
     private List<Commentaire> commentaires;

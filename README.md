@@ -58,6 +58,10 @@ docker container rm mysql
 docker volume rm steam2_mysql_data
 ```
 
+## Réinitialisation de Kafka
+
+On peut vouloir purger un topic kafka si des données de précédents tests restent dedans, pour cela, le plus simple est dans [kafka-ui](https://localhost:8080/)
+
 ## Détails techniques
 
 Ce programme a été codé et testé avec `openjdk-21`
