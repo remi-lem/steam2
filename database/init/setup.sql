@@ -250,6 +250,7 @@ CREATE TABLE jeu (
     nom VARCHAR(50) NOT NULL UNIQUE,
     plateforme VARCHAR(50) NOT NULL,
     jeu_parent_id INT,
+    prix_editeur DECIMAL(5,2) NOT NULL CHECK (prix_editeur >=0),
     CONSTRAINT fk_jeu_editeur_id
         FOREIGN KEY (editeur_id) REFERENCES editeur(id),
     CONSTRAINT fk_jeu_parent_id
@@ -317,7 +318,8 @@ CREATE TABLE joueur (
     password CHAR(64) NOT NULL, -- hash sha256
     nom VARCHAR(50) NOT NULL,
     prenom VARCHAR(50) NOT NULL,
-    date_naissance DATETIME NOT NULL
+    date_naissance DATETIME NOT NULL,
+	date_creation DATETIME NOT NULL
 );
 
 CREATE TABLE session (
@@ -345,4 +347,4 @@ CREATE TABLE joueur_jeu (
 
 -- Ajout de joueur dans la base client
 
-INSERT INTO `joueur` (`id`, `username`, `password`, `nom`, `prenom`, `date_naissance`) VALUES (NULL, 'nino', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', 'keravel', 'nino', '2026-02-25 19:34:48.000000'); 
+INSERT INTO `joueur` (`id`, `username`, `password`, `nom`, `prenom`, `date_naissance`, `date_creation`) VALUES (NULL, 'nino', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', 'keravel', 'nino', '2004-05-04 19:24:47', '2026-02-26 18:24:46.000000');

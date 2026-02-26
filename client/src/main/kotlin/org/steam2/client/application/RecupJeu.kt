@@ -14,7 +14,6 @@ import java.time.Duration
 
 class RecupJeu (
     private val consumer: KafkaConsumer<String, GenericRecord>,
-    private val topic: String,
     private val jeuVideoDAO: JeuVideoDAO,
     private val editeurDAO: EditeurDAO,
     private val genreDAO: GenreDAO
@@ -26,12 +25,13 @@ class RecupJeu (
         isRunning = false
     }
 
-    fun recuperer(jeu: JeuVideo) {
-        val schemaStream = this.javaClass.classLoader.getResourceAsStream("avro/JeuVideo.avsc")
-        val schema = Schema.Parser().parse(schemaStream)
+    fun recuperer() {
+        //val schemaStream = this.javaClass.classLoader.getResourceAsStream("avro/JeuVideo.avsc")
+        //val schema = Schema.Parser().parse(schemaStream)
 
         while (isRunning){
             val records = consumer.poll(Duration.ofMillis(5000))
+            log.info("Récupération de potentiels nouveau jeux...")
             for (record in records) {
                 log.info("Nouveau jeu reçu")
                 val genericJeu: GenericRecord = record.value()
