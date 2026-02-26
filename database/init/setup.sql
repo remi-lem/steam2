@@ -157,7 +157,7 @@ CREATE TABLE jeu_genre (
 );
 
 CREATE TABLE incident (
-    id INT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     details VARCHAR(1024) NOT NULL,
     date DATETIME NOT NULL,
     jeu_id INT NOT NULL,

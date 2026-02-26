@@ -57,7 +57,6 @@ class TransfererIncidents (private val consumer : KafkaConsumer<String, GenericR
 
                     val incident = Incident()
 
-                    incident.id = incident_id
                     incident.details = incident_details
                     incident.date = incident_date
                     incident.jeu = jeu
@@ -72,10 +71,9 @@ class TransfererIncidents (private val consumer : KafkaConsumer<String, GenericR
                     val schema = Schema.Parser().parse(schemaStream)
 
                     val recordEnvoi = GenericData.Record(schema).apply {
-                        put("id", incident_id)
                         put("details", incident_details)
                         put("date", timestamp)
-                        put("jeu_id", jeu_id)
+                        put("jeuId", jeu_id)
                     }
 
                     // envoi

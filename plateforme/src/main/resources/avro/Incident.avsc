@@ -4,10 +4,6 @@
     "namespace":"org.steam2.plateforme.entites",
     "fields" : [
         {
-            "name":"id",
-            "type":"int"
-        },
-        {
             "name":"details",
             "type":"string"
         },
@@ -19,7 +15,7 @@
             }
         },
         {
-            "name":"jeu_id",
+            "name":"jeuId",
             "type":"int"
         }
     ]
