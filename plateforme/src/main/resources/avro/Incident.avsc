@@ -1,0 +1,26 @@
+{
+    "type":"record",
+    "name":"Incident",
+    "namespace":"org.steam2.plateforme.entites",
+    "fields" : [
+        {
+            "name":"id",
+            "type":"int"
+        },
+        {
+            "name":"details",
+            "type":"string"
+        },
+        {
+            "name":"date",
+            "type":{
+                "type":"long",
+                "logicalType":"timestamp-millis"
+            }
+        },
+        {
+            "name":"jeu_id",
+            "type":"int"
+        }
+    ]
+}
