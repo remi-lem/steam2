@@ -157,7 +157,7 @@ CREATE TABLE jeu_genre (
 );
 
 CREATE TABLE incident (
-    id INT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     details VARCHAR(1024) NOT NULL,
     date DATETIME NOT NULL,
     jeu_id INT NOT NULL,
@@ -188,7 +188,7 @@ CREATE TABLE jeu_joueur (
 );
 
 CREATE TABLE commentaire (
-    id INT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     commentaire VARCHAR(1024) NOT NULL,
     note INT NOT NULL CHECK (note BETWEEN 0 AND 10),
     date DATETIME NOT NULL,
