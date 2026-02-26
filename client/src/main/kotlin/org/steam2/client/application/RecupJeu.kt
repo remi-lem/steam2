@@ -5,7 +5,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 import org.steam2.client.daos.JeuVideoDAO
 import org.steam2.client.entites.JeuVideo
-import org.steam2.client.entites.type.Plateforme
+import org.steam2.client.entites.type.PlateformeJeu
 import java.math.BigDecimal
 import java.time.Duration
 
@@ -26,7 +26,6 @@ class RecupJeu (
 
         while (isRunning){
             val records = consumer.poll(Duration.ofMillis(5000))
-            log.info("Récupération de potentiels nouveau jeux...")
             for (record in records) {
                 log.info("Nouveau jeu reçu")
                 val genericJeu: GenericRecord = record.value()
@@ -50,7 +49,7 @@ class RecupJeu (
 
                 jeu.nom = jeu_nom
                 jeu.prix_editeur = prix_editeur
-                jeu.plateforme = Plateforme.valueOf(plateformeStr)
+                jeu.plateforme = PlateformeJeu.valueOf(plateformeStr)
 
                 if (jeu_parent_id != null){
                     val parent = jeuVideoDAO.getJeuVideoById(jeu_parent_id)

@@ -2,8 +2,6 @@ package org.steam2.client.entites;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.steam2.client.entites.*;
-import java.time.LocalTime;
 
 /**
  * Entité composé reliant un jeu et un joueur avec son avis et son temps de jeu
@@ -25,6 +23,6 @@ public class JeuJoueur {
     @JoinColumn(name="joueur_id")
     private Joueur joueur;
 
-    @Column(name="temps_jeu")
-    private LocalTime temps_jeu;
+    @Column(name="temps_joue_m")
+    private Integer temps_joue_m;
 }

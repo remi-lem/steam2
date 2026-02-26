@@ -3,10 +3,9 @@ package org.steam2.client.entites;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.steam2.client.entites.*;
 import java.math.BigDecimal;
 import java.util.List;
-import org.steam2.client.entites.type.*;
+import org.steam2.client.entites.type.PlateformeJeu;
 
 /**
  * Entité JeuVideo
@@ -27,7 +26,7 @@ public class JeuVideo {
 
     @Column(name = "plateforme")
     @Enumerated(EnumType.STRING)
-    private Plateforme plateforme;
+    private PlateformeJeu plateforme;
 
     @ManyToOne
     @JoinColumn(name = "jeu_parent_id")

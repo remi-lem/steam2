@@ -293,6 +293,7 @@ CREATE TABLE joueur (
     password CHAR(64) NOT NULL, -- hash sha256
     nom VARCHAR(50) NOT NULL,
     prenom VARCHAR(50) NOT NULL,
+	solde DECIMAL(5,2) NOT NULL CHECK (solde>=0),
     date_naissance DATETIME NOT NULL,
 	date_creation DATETIME NOT NULL
 );
@@ -309,9 +310,10 @@ CREATE TABLE session (
         FOREIGN KEY (joueur_id) REFERENCES joueur(id)
 );
 
-CREATE TABLE joueur_jeu (
+CREATE TABLE jeu_joueur (
     joueur_id INT,
     jeu_id INT,
+	temps_joue_m INT,
     CONSTRAINT pk_joueur_jeu
         PRIMARY KEY (joueur_id, jeu_id),
     CONSTRAINT fk_joueur_jeu_joueur_id
@@ -322,4 +324,4 @@ CREATE TABLE joueur_jeu (
 
 -- Ajout de joueur dans la base client
 
-INSERT INTO `joueur` (`id`, `username`, `password`, `nom`, `prenom`, `date_naissance`, `date_creation`) VALUES (NULL, 'nino', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', 'keravel', 'nino', '2004-05-04 19:24:47', '2026-02-26 18:24:46.000000');
+INSERT INTO `joueur` (`id`, `username`, `password`, `nom`, `prenom`, `solde`, `date_naissance`, `date_creation`) VALUES (NULL, 'nino', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', 'keravel', 'nino', '100', '2004-05-04 22:54:16', '2026-02-26 21:54:16.000000');

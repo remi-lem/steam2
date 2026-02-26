@@ -5,17 +5,25 @@ import com.googlecode.lanterna.gui2.*
 import com.googlecode.lanterna.gui2.dialogs.ActionListDialogBuilder
 import com.googlecode.lanterna.gui2.dialogs.MessageDialog
 import org.slf4j.LoggerFactory
+import org.steam2.client.daos.JeuJoueurDAO
 import org.steam2.client.daos.JeuVideoDAO
 import org.steam2.client.daos.JoueurDAO
+import org.steam2.client.entites.JeuJoueur
+import org.steam2.client.entites.JeuVideo
 import org.steam2.client.entites.Joueur
 import org.steam2.client.exceptions.LoginException
 import java.nio.charset.StandardCharsets
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 import java.util.Properties
 
 class Menus (
     private val gui: MultiWindowTextGUI,
     private val joueurDAO: JoueurDAO,
     private val jeuVideoDAO: JeuVideoDAO,
+    private val jeuJoueurDAO: JeuJoueurDAO
 
 ) {
     private val log = LoggerFactory.getLogger(Menus::class.java)
@@ -37,7 +45,8 @@ class Menus (
                     .setTitle("Menu principal $joueurCourant")
                     .setDescription("Choisissez une action")
                     .setCanCancel(false)
-                    .addAction ("Quitter l'pplication") {
+                    .addAction("Consulter les jeux en magasin") { menuMagasin() }
+                    .addAction ("Quitter l'application") {
                         quitter = true
                     }
                     .build()
@@ -47,6 +56,163 @@ class Menus (
                 MessageDialog.showMessageDialog(gui, "Erreur critique", e.message)
             }
         }
+    }
+
+    /**
+     * Partie du menu pour voir les jeux du magasin
+     * @author Nino
+     */
+    fun menuMagasin(page:Int = 0){
+        try {
+            val listJeux = jeuVideoDAO.recupListeJeux()
+            menuConsultationGeneriqueJeu(
+                page = page,
+                titre = "Jeux en magasin",
+                messageVide = "Aucun jeu en magasin",
+                items = listJeux,
+                itemMapper = {
+                    jeu ->
+                    var strPossede = "${jeu.prix_editeur} "
+                    if (jeuJoueurDAO.possede(joueurCourant, jeu)) {strPossede = "possédé"};
+                    "${jeu.nom} : $strPossede"
+                },
+                callback = {p -> menuMagasin(p)}
+            )
+
+        } catch (e: Exception) {
+            TODO("Erreur pour affichage jeux")
+        }
+
+    }
+
+    fun menuAfficherDLCs(jeuVideo: JeuVideo, page: Int = 0) {
+        try {
+            menuConsultationGeneriqueJeu(
+                page = page,
+                titre = "DLCs pour ${jeuVideo.nom}",
+                messageVide = "Aucun DLC disponibles pour ${jeuVideo.nom}",
+                items = jeuVideo.dlcs,
+                itemMapper = { dlc ->
+                    var strPossede = "${dlc.prix_editeur} "
+                    if (jeuJoueurDAO.possede(joueurCourant, dlc)) {
+                        strPossede = "possédé"
+                    };
+                    "${dlc.nom} : $strPossede"
+                },
+                callback = { p -> menuMagasin(p) }
+            )
+        } catch (e: Exception) {
+            TODO("Erreur pour affichage DLCs")
+        }
+    }
+
+    /**
+     * Menu générique de consultation de jeu
+     * @param page l'index de la page à consulter
+     * @param titre le titre de la fenêtre
+     * @param messageVide le message affiché si aucune donnée ne peut être affichée
+     * @param items les items à afficher (commentaires ou rapports d'incident)
+     * @param itemMapper mapper pour récupérer les messages en fonction du contexte (commentaire ou rapport d'incident)
+     * @param callback retour à la méthode appelante lors du changement de page ou de la fin de consultation d'un élément
+     * @author Remi
+     * @author Nino
+     */
+    private fun menuConsultationGeneriqueJeu(
+        page: Int,
+        titre: String,
+        messageVide: String,
+        items: List<JeuVideo>,
+        itemMapper: (JeuVideo) -> String,
+        callback: (Int) -> Unit
+    ) {
+        val pageSize = 10
+        var totalPages = (items.size + pageSize - 1) / pageSize
+        if(totalPages == 0) totalPages = 1
+
+        val builder = ActionListDialogBuilder()
+            .setTitle("$titre (Page ${page + 1}/$totalPages)")
+
+        // on determine quels items sont affichés sur la page actuelle
+        val startIndex = page * pageSize
+        val pageItems = items.drop(startIndex).take(pageSize)
+
+        // bouton precedent
+        if (page > 0) {
+            builder.addAction("<<< PAGE PRÉCÉDENTE") { callback(page - 1) }
+        }
+
+        // Mise en forme des dates
+        val formatterDate = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+            .withLocale(Locale.FRENCH)
+        val formatterDateTime = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.MEDIUM)
+            .withLocale(Locale.FRENCH)
+
+        // contenu
+        pageItems.forEach { item ->
+            val label = itemMapper(item)
+            builder.addAction(label) {
+                menuAfficherJeu(item)
+                callback(page) // On relance la page après lecture
+            }
+        }
+        if (items.isEmpty()) {
+            builder.setDescription(messageVide)
+        }
+
+        // bouton suivant
+        if (startIndex + pageSize < items.size) {
+            builder.addAction("PAGE SUIVANTE >>>") { callback(page+1) }
+        }
+
+        builder.build().showDialog(gui)
+    }
+
+
+
+    /**
+     * Ouvre une fenètre pour afficher les informations sur un jeu
+     * @param jeuVideoConsute le jeu à afficher
+     * @author nino
+     */
+    fun menuAfficherJeu(jeuVideoConsute: JeuVideo){
+        val actionsBuilder = ActionListDialogBuilder()
+
+        actionsBuilder.setTitle("Jeu : ${jeuVideoConsute.nom}")
+
+        actionsBuilder.setDescription("Choisicez une actions")
+
+        if (jeuJoueurDAO.possede(joueurCourant,jeuVideoConsute)) {
+            actionsBuilder.addAction ("Jouer"){
+                TODO("Implementer l'action de jouer")
+            }
+            actionsBuilder.addAction ("Consulter les DLCs"){
+                TODO("Implementer la visualisation des DLCs")
+            //menuAfficherDLCs(jeuVideoConsute)
+            }
+        } else if (joueurCourant.solde >= jeuVideoConsute.prix_editeur) {
+            actionsBuilder.addAction ("Acheter (prix:${jeuVideoConsute.prix_editeur}"){
+                joueurCourant.solde = joueurCourant.solde.subtract(jeuVideoConsute.prix_editeur)
+                val achat = JeuJoueur().apply {
+                    jeuVideo = jeuVideoConsute
+                    joueur = joueurCourant
+                    temps_joue_m = 0
+                }
+                try {
+                    jeuJoueurDAO.persister(achat)
+                    log.info("Le joueur ${joueurCourant.nom} a acheté le jeu $jeuVideoConsute")
+                } catch (e :Exception){
+                    log.error("Erreur en achetant le jeu : "+e.message)
+                }
+            }
+        }
+
+        actionsBuilder.build().showDialog(gui)
+
+    }
+
+    fun menuPublierCommentaire(jeuVideoACommenter: JeuVideo){
+        val actionBuilder = ActionListDialogBuilder()
+
     }
 
     fun login() : Joueur? {
