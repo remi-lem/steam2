@@ -43,10 +43,9 @@ class TransfererIncidents (private val consumer : KafkaConsumer<String, GenericR
                     log.info("Nouveau rapport d'incident reçu : ${record.value()}");
                     val genericIncident : GenericRecord = record.value();
 
-                    val incident_id = genericIncident.get("id") as Int
                     val incident_details = genericIncident.get("detail").toString()
                     val timestamp = genericIncident.get("date") as Long
-                    val jeu_id = genericIncident.get("jeu_id") as Int
+                    val jeu_id = genericIncident.get("jeuId") as Int
 
                     //calculer la date
                     val incident_date = Instant.ofEpochSecond(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime()
@@ -77,7 +76,7 @@ class TransfererIncidents (private val consumer : KafkaConsumer<String, GenericR
                     }
 
                     // envoi
-                    producer.send(ProducerRecord(topic, record))
+                    producer.send(ProducerRecord(topic, recordEnvoi))
                     producer.flush()
 
                     // 2 flush nécessaires lors de la création du topic

@@ -17,6 +17,19 @@ public class CommentaireDAO {
 
     public CommentaireDAO(EntityManagerFactory emf){this.emf = emf;}
 
+    /**
+     * Persister une entité Commentaire dans la base
+     * @param commentaire l'entité à persister
+     * @author Wilhem
+     */
+    public void persister(Commentaire commentaire) {
+        try (EntityManager em = emf.createEntityManager()) {
+            em.getTransaction().begin();
+            em.persist(commentaire);
+            em.getTransaction().commit();
+        }
+    }
+
 
     /**
      * Récupérer les commentaires d'un jeu
