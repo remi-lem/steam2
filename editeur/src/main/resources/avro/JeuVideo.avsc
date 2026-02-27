@@ -40,10 +40,6 @@
       }
     },
     {
-      "name": "commentaire_editeur",
-      "type": "string"
-    },
-    {
       "name": "version",
       "type": {
         "type": "record",
@@ -60,6 +56,38 @@
           {
             "name": "correction",
             "type": "int"
+          },
+          {
+            "name": "commentaire_editeur",
+            "type": "string"
+          },
+          {
+            "name": "listeDesModifications",
+            "type": [
+              "null",
+              {
+                "type": "array",
+                "items": {
+                  "type": "record",
+                  "name": "DetailModifPatch",
+                  "fields": [
+                    {
+                      "name": "type_modification",
+                      "type": {
+                        "type": "enum",
+                        "name": "TypeModificationPatch",
+                        "symbols": ["CORRECTION", "AJOUT", "OPTI"]
+                      }
+                    },
+                    {
+                      "name": "commentaire",
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            ],
+            "default": null
           }
         ]
       }
