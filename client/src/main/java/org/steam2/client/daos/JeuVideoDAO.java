@@ -3,6 +3,7 @@ package org.steam2.client.daos;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.steam2.client.entites.JeuVideo;
+import java.util.List;
 
 public class JeuVideoDAO {
 
@@ -23,6 +24,13 @@ public class JeuVideoDAO {
             em.getTransaction().begin();
             em.persist(jeuVideo);
             em.getTransaction().commit();
+        }
+    }
+
+    public List<JeuVideo> recupListeJeux() {
+        try (EntityManager em = emf.createEntityManager()){
+            return em.createQuery("FROM JeuVideo ORDER BY nom DESC", JeuVideo.class)
+                    .getResultList();
         }
     }
 }

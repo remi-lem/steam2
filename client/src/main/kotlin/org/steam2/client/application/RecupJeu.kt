@@ -1,23 +1,17 @@
 package org.steam2.client.application
 
-import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
-import org.steam2.client.daos.EditeurDAO
-import org.steam2.client.daos.GenreDAO
 import org.steam2.client.daos.JeuVideoDAO
 import org.steam2.client.entites.JeuVideo
-import org.steam2.client.entites.type.Plateforme
+import org.steam2.client.entites.type.PlateformeJeu
 import java.math.BigDecimal
 import java.time.Duration
 
 class RecupJeu (
     private val consumer: KafkaConsumer<String, GenericRecord>,
-    private val topic: String,
-    private val jeuVideoDAO: JeuVideoDAO,
-    private val editeurDAO: EditeurDAO,
-    private val genreDAO: GenreDAO
+    private val jeuVideoDAO: JeuVideoDAO
 ) {
     private val log = LoggerFactory.getLogger(RecupJeu::class.java)
     private var isRunning = true
@@ -26,9 +20,9 @@ class RecupJeu (
         isRunning = false
     }
 
-    fun recuperer(jeu: JeuVideo) {
-        val schemaStream = this.javaClass.classLoader.getResourceAsStream("avro/JeuVideo.avsc")
-        val schema = Schema.Parser().parse(schemaStream)
+    fun recuperer() {
+        //val schemaStream = this.javaClass.classLoader.getResourceAsStream("avro/JeuVideo.avsc")
+        //val schema = Schema.Parser().parse(schemaStream)
 
         while (isRunning){
             val records = consumer.poll(Duration.ofMillis(5000))
@@ -38,13 +32,10 @@ class RecupJeu (
 
                 val jeu_id = genericJeu.get("id") as Int
                 val jeu_nom = genericJeu.get("nom").toString()
-                val editeur_id = genericJeu.get("editeur_id") as Int
                 val prix_editeur = BigDecimal.valueOf((genericJeu.get("prix") as Float).toDouble())
 
                 val plateformeStr = genericJeu.get("plateforme").toString()
                 val jeu_parent_id = genericJeu.get("jeu_parent_id") as? Int
-
-                val listNomGenres = (genericJeu.get("genres") as List<*>).map {it.toString()}
 
                 //check si jeu existant
                 var jeu = jeuVideoDAO.getJeuVideoById(jeu_id)
@@ -58,25 +49,12 @@ class RecupJeu (
 
                 jeu.nom = jeu_nom
                 jeu.prix_editeur = prix_editeur
-                jeu.plateforme = Plateforme.valueOf(plateformeStr)
-
-                val editeur = editeurDAO.getEditeurById(editeur_id)
-                    ?: throw RuntimeException("Editeur introuvable : $editeur_id")
-
-                jeu.editeur = editeur
+                jeu.plateforme = PlateformeJeu.valueOf(plateformeStr)
 
                 if (jeu_parent_id != null){
                     val parent = jeuVideoDAO.getJeuVideoById(jeu_parent_id)
                     jeu.jeuParent = parent
                 }
-
-                val genres = genreDAO.getListGenreByNom(listNomGenres)
-
-                //warn si des genres ont été perdu
-                if (genres.size != listNomGenres.size){
-                    log.warn("Des genres ont été perdu dans le transfert car inexistant dans la base")
-                }
-                jeu.genres = genres
 
                 jeuVideoDAO.persister(jeu)
 

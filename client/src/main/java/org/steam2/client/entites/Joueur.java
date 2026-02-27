@@ -3,6 +3,7 @@ package org.steam2.client.entites;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -49,13 +50,8 @@ public class Joueur {
     )
     private List<Joueur> amis;
 
-    @ManyToMany
-    @JoinTable(
-            name="abonnement",
-            joinColumns = @JoinColumn(name="joueur_id"),
-            inverseJoinColumns = @JoinColumn(name="editeur_id")
-    )
-    private List<Editeur> abonnements;
+    @Column(name="solde")
+    private BigDecimal solde;
 
     @OneToMany(mappedBy = "joueur", fetch = FetchType.LAZY)
     private List<Commentaire> commentaires;

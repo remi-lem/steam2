@@ -10,13 +10,13 @@ import java.util.Objects;
 public class JeuJoueurId implements Serializable {
 
     private Integer jeuVideo;
-    private Integer joueur;
+    private String joueur;
 
     public JeuJoueurId() {}
 
-    public JeuJoueurId(Integer jeuId, Integer joueurId){
+    public JeuJoueurId(Integer jeuId, String joueurUsername){
         this.jeuVideo = jeuId;
-        this.joueur = joueurId;
+        this.joueur = joueurUsername;
     }
 
 

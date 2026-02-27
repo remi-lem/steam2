@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 public class Commentaire {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
 
@@ -32,6 +33,6 @@ public class Commentaire {
     private JeuVideo jeu;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="joueur_id")
+    @JoinColumn(name="joueur_username")
     private Joueur joueur;
 }

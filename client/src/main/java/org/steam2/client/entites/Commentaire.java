@@ -24,7 +24,7 @@ public class Commentaire {
     private JeuVideo jeu;
 
     @ManyToOne
-    @JoinColumn(name = "joueur")
+    @JoinColumn(name = "joueur_id")
     private Joueur joueur;
 
     @Column(name = "date")
