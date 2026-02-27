@@ -38,6 +38,9 @@ public class JeuVideo {
     @Column(name="prix_editeur")
     private BigDecimal prix_editeur;
 
+    @Column(name="prix_vente")
+    private BigDecimal prix_vente;
+
     @OneToMany(mappedBy = "jeu", fetch = FetchType.LAZY)
     private List<VersionJeu> versions;
 
@@ -50,6 +53,16 @@ public class JeuVideo {
     @OneToMany(mappedBy = "jeuVideo", cascade = CascadeType.ALL)
     private List<JeuJoueur> joueurs;
 
+    @Column(name = "note")
+    private BigDecimal note;
+
+    @ManyToMany
+    @JoinTable(
+            name = "jeu_genre",
+            joinColumns = { @JoinColumn(name = "jeu_id") },
+            inverseJoinColumns = { @JoinColumn(name = "genre_id") }
+    )
+    private List<Genre> genres;
     @Override
     public String toString() {
         return this.nom;

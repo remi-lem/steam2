@@ -184,9 +184,17 @@ class Menus (
     fun menuAfficherJeu(jeuVideoConsute: JeuVideo){
         val actionsBuilder = ActionListDialogBuilder()
 
-        actionsBuilder.setTitle("Jeu : ${jeuVideoConsute.nom}")
+        val noteJeu : String
 
-        actionsBuilder.setDescription("Choisicez une actions")
+        if (jeuVideoConsute.note == null){
+            noteJeu = "Pas de notes"
+        } else {
+            noteJeu = "note : ${jeuVideoConsute.note}"
+        }
+
+        actionsBuilder.setTitle("Jeu : ${jeuVideoConsute.nom} ($noteJeu)")
+
+        actionsBuilder.setDescription("Choisissez une actions : ")
 
         if (jeuJoueurDAO.possede(joueurCourant,jeuVideoConsute)) {
             actionsBuilder.addAction ("Jouer"){
@@ -198,9 +206,9 @@ class Menus (
             }
             actionsBuilder.addAction("Envoyer un commentaire") { menuPublierCommentaire(jeuVideoConsute) }
             actionsBuilder.addAction("Envoyer un incident") { menuPublierIncident(jeuVideoConsute) }
-        } else if (joueurCourant.solde >= jeuVideoConsute.prix_editeur) {
-            actionsBuilder.addAction ("Acheter (prix:${jeuVideoConsute.prix_editeur}"){
-                joueurCourant.solde = joueurCourant.solde.subtract(jeuVideoConsute.prix_editeur)
+        } else if (joueurCourant.solde >= jeuVideoConsute.prix_vente) {
+            actionsBuilder.addAction ("Acheter (prix:${jeuVideoConsute.prix_vente})"){
+                joueurCourant.solde = joueurCourant.solde.subtract(jeuVideoConsute.prix_vente)
                 joueurDAO.merge(joueurCourant);
                 val achat = JeuJoueur().apply {
                     jeuVideo = jeuVideoConsute
@@ -259,6 +267,8 @@ class Menus (
                     log.info("${joueurCourant.nom} à envoyé un commentaire sur ${jeuVideoACommenter.nom} : ${txtCommentaire.text}")
                     MessageDialog.showMessageDialog(gui,"Succès", "Commentaire publié sur ${jeuVideoACommenter.nom}")
                     window.close()
+                    jeuVideoDAO.majNoteJeu(jeuVideoACommenter)
+                    jeuVideoDAO.majPrixVenteJeu(jeuVideoACommenter)
                 } catch (e: Exception) {
                     MessageDialog.showMessageDialog(gui, "Erreur sql", e.message ?: "Erreur inconnue")
                     log.error(e.stackTrace.toString())
@@ -305,6 +315,7 @@ class Menus (
                     log.info("${joueurCourant.nom} à envoyé un incident sur ${jeuConcerne.nom} : ${txtDetails.text}")
                     MessageDialog.showMessageDialog(gui,"Succès", "Incident publié pour ${jeuConcerne.nom}")
                     window.close()
+                    jeuVideoDAO.majPrixVenteJeu(jeuConcerne)
                 } catch (e: Exception) {
                     MessageDialog.showMessageDialog(gui, "Erreur sql", e.message ?: "Erreur inconnue")
                     log.error(e.message)

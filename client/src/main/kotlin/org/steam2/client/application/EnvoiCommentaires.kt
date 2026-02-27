@@ -20,7 +20,7 @@ class EnvoiCommentaires(
         val record = GenericData.Record(schema).apply {
             put("commentaire",commentaire.commentaire)
             put("date", Timestamp.valueOf(commentaire.date).time)
-            put("note", commentaire.note) //TODO : mettre la note utilisateur
+            put("note", commentaire.note)
             put("jeuId",commentaire.jeu.id)
             put("joueurUsername",commentaire.joueur.username)
         }
