@@ -58,12 +58,14 @@ class RecupererJeuxVideos(private val consumer: KafkaConsumer<String, GenericRec
                         log.info("Nouveau jeu ! creation...")
                         jeu = JeuVideo()
                         jeu.id = jeu_id
+                        jeu.prix_vente = prix_editeur
                     } else {
                         log.info("Jeu existant ! Mise à jour")
                     }
 
                     jeu.nom = jeu_nom
                     jeu.prix_editeur = prix_editeur
+
                     jeu.plateforme = Plateforme.valueOf(plateformeStr)
 
                     val editeur = editeurDAO.getEditeurById(editeur_id)
@@ -100,6 +102,9 @@ class RecupererJeuxVideos(private val consumer: KafkaConsumer<String, GenericRec
                     jeu.genres = genres
 
                     jeuVideoDAO.persister(jeu)
+
+                    //Une fois persister on calcul son prix de vente
+                    jeuVideoDAO.majPrixVenteJeu(jeu);
 
                     log.info("Jeu sauvegardé : id=$jeu_id")
                 }

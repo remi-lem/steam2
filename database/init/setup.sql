@@ -122,6 +122,8 @@ CREATE TABLE jeu (
     plateforme VARCHAR(50) NOT NULL,
     jeu_parent_id INT,
     prix_editeur DECIMAL(5,2) NOT NULL CHECK (prix_editeur >=0),
+    prix_vente DECIMAL(5,2) NOT NULL CHECK (prix_vente >=0),
+    note DECIMAL(4,2),
     CONSTRAINT fk_jeu_editeur_id
      FOREIGN KEY (editeur_id) REFERENCES editeur(id),
     CONSTRAINT fk_jeu_parent_id

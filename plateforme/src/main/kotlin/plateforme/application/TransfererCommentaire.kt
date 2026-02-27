@@ -76,6 +76,11 @@ class TransfererCommentaire(private val consumer : KafkaConsumer<String, Generic
                     commentaireDAO.persister(commentaire)
                     log.info("Commentaire enregistré : ${commentaire.id}")
 
+                    //maj note
+                    jeuVideoDAO.majNoteJeu(jeu)
+                    log.info("Nouvelle note du jeu : ${jeu.note}")
+                    log.info("Nouveau prix du jeu :${jeu.prix_vente}")
+
                     //Envoyé à l'éditeur
                     log.info("Début du transfert")
 
@@ -89,10 +94,6 @@ class TransfererCommentaire(private val consumer : KafkaConsumer<String, Generic
 
                     //envoi
                     producer.send(ProducerRecord(topic, recordEnvoi))
-                    producer.flush()
-
-                    // 2 flush nécessaires lors de la création du topic
-                    producer.flush()
 
                     log.info("Commentaire transférer à Editeur")
 

@@ -68,6 +68,10 @@ class TransfererIncidents (private val consumer : KafkaConsumer<String, GenericR
                     incidentDAO.persister(incident)
                     log.info("Incident enregistré : ${incident.id}")
 
+                    //Maj du prix
+                    jeuVideoDAO.majPrixVenteJeu(jeu)
+                    log.info("Nouveau prix du jeu :${jeu.prix_vente}")
+
                     //envoyé à Editeur
                     log.info("Début du transfert")
 
@@ -80,14 +84,11 @@ class TransfererIncidents (private val consumer : KafkaConsumer<String, GenericR
 
                     // envoi
                     producer.send(ProducerRecord(topic, recordEnvoi))
-                    producer.flush()
-
-                    // 2 flush nécessaires lors de la création du topic
-                    producer.flush()
                 }
             }
         } finally {
             consumer.close()
+            producer.close()
         }
     }
 }
