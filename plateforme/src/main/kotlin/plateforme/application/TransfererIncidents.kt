@@ -48,7 +48,7 @@ class TransfererIncidents (private val consumer : KafkaConsumer<String, GenericR
                     val jeu_id = genericIncident.get("jeuId") as Int
 
                     //calculer la date
-                    val incident_date = Instant.ofEpochSecond(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime()
+                    val incident_date = Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime()
 
                     //récupérer le jeu
                     val jeu = jeuVideoDAO.getJeuVideoById(jeu_id)
