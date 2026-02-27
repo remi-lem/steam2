@@ -131,7 +131,7 @@ CREATE TABLE jeu (
 );
 
 CREATE TABLE version_jeu (
-    id INT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     jeu_id INT NOT NULL,
     commentaire_editeur VARCHAR(1024) NOT NULL,
     generation INT NOT NULL,
