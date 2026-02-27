@@ -5,8 +5,10 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 import org.steam2.client.daos.GenreDAO
 import org.steam2.client.daos.JeuVideoDAO
+import org.steam2.client.daos.VersionJeuDAO
 import org.steam2.client.entites.Genre
 import org.steam2.client.entites.JeuVideo
+import org.steam2.client.entites.VersionJeu
 import org.steam2.client.entites.type.PlateformeJeu
 import java.math.BigDecimal
 import java.time.Duration
@@ -16,7 +18,7 @@ import java.time.Duration
  * @author Wilhem
  */
 class RecupJeu(private val consumer: KafkaConsumer<String, GenericRecord>,
-                          private val jeuVideoDAO: JeuVideoDAO, private val genreDAO: GenreDAO
+                          private val jeuVideoDAO: JeuVideoDAO, private val genreDAO: GenreDAO,private val versionJeuDAO: VersionJeuDAO
 ) {
 
     companion object {
@@ -96,7 +98,31 @@ class RecupJeu(private val consumer: KafkaConsumer<String, GenericRecord>,
 
                     jeuVideoDAO.persister(jeu)
 
-                    //Une fois persister on calcul son prix de vente
+                    //VERSION DU JEU
+                    log.info("Enregistrement de la version du jeu")
+
+                    val version = genericJeu.get("version") as GenericRecord
+                    var commentaire_editeur = version.get("commentaire_editeur").toString()
+                    val generation = version.get("generation") as Int
+                    val revision = version.get("revision") as Int
+                    val correction = version.get("correction") as Int
+
+                    // Ne pas crash si aucun commentaire n'est mis
+                    if (commentaire_editeur == null){
+                        commentaire_editeur = ""
+                    }
+
+                    val versionJeu = VersionJeu()
+                    versionJeu.jeu = jeu
+                    versionJeu.commentaireEditeur = commentaire_editeur
+                    versionJeu.generation = generation
+                    versionJeu.revision = revision
+                    versionJeu.correction = correction
+
+                    versionJeuDAO.persister(versionJeu)
+                    log.info("Version jeu enregistré : $generation.$revision.$correction")
+
+                    //Une fois persisté, on calcule son prix de vente
                     jeuVideoDAO.majPrixVenteJeu(jeu);
 
                     log.info("Jeu sauvegardé : id=$jeu_id")

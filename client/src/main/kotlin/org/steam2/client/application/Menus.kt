@@ -84,7 +84,7 @@ class Menus (
                     jeu ->
                     var strPossede = "${jeu.prix_vente} "
                     if (jeuJoueurDAO.possede(joueurCourant, jeu)) {strPossede = "possédé"}
-                    "${jeu.nom} : $strPossede"
+                    "$jeu : $strPossede"
                 },
                 callback = {p -> menuMagasin(p)}
             )
@@ -104,7 +104,7 @@ class Menus (
                 messageVide = "Aucun jeu en possédé",
                 items = listJeux,
                 itemMapper = { jeu ->
-                    "${jeu.nom} : ${sessionDAO.getTempsJoueTotal(joueurCourant,jeu)}"
+                    "$jeu : ${sessionDAO.getTempsJoueTotal(joueurCourant,jeu)}"
                 },
                 callback = { p -> menuBibliotheque(p) }
             )
@@ -126,7 +126,7 @@ class Menus (
                     if (jeuJoueurDAO.possede(joueurCourant, dlc)) {
                         strPossede = "possédé"
                     }
-                    "${dlc.nom} : $strPossede"
+                    "$dlc : $strPossede"
                 },
                 callback = { p -> menuMagasin(p) }
             )
@@ -212,8 +212,7 @@ class Menus (
                 menuJouer(jeuVideoConsute)
             }
             actionsBuilder.addAction ("Consulter les DLCs"){
-                TODO("Implementer la visualisation des DLCs")
-            //menuAfficherDLCs(jeuVideoConsute)
+                menuAfficherDLCs(jeuVideoConsute)
             }
             actionsBuilder.addAction("Envoyer un commentaire") { menuPublierCommentaire(jeuVideoConsute) }
             actionsBuilder.addAction("Envoyer un incident") { menuPublierIncident(jeuVideoConsute) }

@@ -41,7 +41,7 @@ public class JeuVideo {
     @Column(name="prix_vente")
     private BigDecimal prix_vente;
 
-    @OneToMany(mappedBy = "jeu", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "jeu", fetch = FetchType.EAGER)
     private List<VersionJeu> versions;
 
     @OneToMany(mappedBy = "jeu", fetch = FetchType.LAZY)
@@ -65,6 +65,6 @@ public class JeuVideo {
     private List<Genre> genres;
     @Override
     public String toString() {
-        return this.nom;
+        return this.nom + " ("+versions.getLast().toString()+")";
     }
 }

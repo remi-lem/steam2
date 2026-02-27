@@ -32,7 +32,8 @@ public class VersionJeu {
     @Column(name = "correction")
     private Integer correction;
 
-    public String getVersionString() {
+    @Override
+    public String toString() {
         return generation + "." + revision + "." + correction;
     }
 
