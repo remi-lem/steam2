@@ -1,23 +1,22 @@
 {
-		"type":"record",
-				"name":"Commentaire",
-				"namespace":"org.steam2.client.entites",
-		"fields" : [
+	"type": "record",
+	"name": "Commentaire",
+	"namespace": "org.steam2.client.entites",
+	"fields": [
 		{
-				"name":"commentaire",
-						"type":"string"
-				},
+			"name": "commentaire",
+			"type": "string"
+		},
 		{
-				"name":"date",
-						"type":{
-				"type":"long",
-						"logicalType":"timestamp-millis"
-				}
-				},
+			"name": "date",
+			"type": {
+				"type": "long",
+				"logicalType": "timestamp-millis"
+			}
+		},
 		{
-				"name":"jeuId",
-						"type":"int"
-				}
-		]
+			"name": "jeuId",
+			"type": "int"
 		}
+	]
 }

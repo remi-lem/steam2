@@ -6,19 +6,18 @@ import com.googlecode.lanterna.gui2.dialogs.ActionListDialogBuilder
 import com.googlecode.lanterna.gui2.dialogs.MessageDialog
 import org.slf4j.LoggerFactory
 import org.steam2.client.daos.CommentaireDAO
+import org.steam2.client.daos.IncidentDAO
 import org.steam2.client.daos.JeuJoueurDAO
 import org.steam2.client.daos.JeuVideoDAO
 import org.steam2.client.daos.JoueurDAO
 import org.steam2.client.entites.Commentaire
+import org.steam2.client.entites.Incident
 import org.steam2.client.entites.JeuJoueur
 import org.steam2.client.entites.JeuVideo
 import org.steam2.client.entites.Joueur
 import org.steam2.client.exceptions.LoginException
 import java.nio.charset.StandardCharsets
-import java.sql.Date
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
@@ -30,7 +29,9 @@ class Menus (
     private val jeuVideoDAO: JeuVideoDAO,
     private val jeuJoueurDAO: JeuJoueurDAO,
     private val commentaireDAO: CommentaireDAO,
-    private val envoiCommentaires: EnvoiCommentaires
+    private val incidentDAO: IncidentDAO,
+    private val envoiCommentaires: EnvoiCommentaires,
+    private val envoiIncidents: EnvoiIncidents
 ) {
     private val log = LoggerFactory.getLogger(Menus::class.java)
 
@@ -194,6 +195,7 @@ class Menus (
             //menuAfficherDLCs(jeuVideoConsute)
             }
             actionsBuilder.addAction("Envoyer un commentaire") { menuPublierCommentaire(jeuVideoConsute) }
+            actionsBuilder.addAction("Envoyer un incident") { menuPublierIncident(jeuVideoConsute) }
         } else if (joueurCourant.solde >= jeuVideoConsute.prix_editeur) {
             actionsBuilder.addAction ("Acheter (prix:${jeuVideoConsute.prix_editeur}"){
                 joueurCourant.solde = joueurCourant.solde.subtract(jeuVideoConsute.prix_editeur)
@@ -217,7 +219,7 @@ class Menus (
     }
 
     fun menuPublierCommentaire(jeuVideoACommenter: JeuVideo){
-        val window = BasicWindow("Bublier un commentaire sur ${jeuVideoACommenter.nom}")
+        val window = BasicWindow("Publier un commentaire sur ${jeuVideoACommenter.nom}")
         window.setHints(listOf(Window.Hint.CENTERED))
 
         val panel = Panel(GridLayout(2))
@@ -249,7 +251,52 @@ class Menus (
                 } catch (e: Exception) {
                     MessageDialog.showMessageDialog(gui, "Erreur sql", e.message ?: "Erreur inconnue")
                     log.error(e.stackTrace.toString())
-                    throw e;
+                }
+            }
+        }
+
+        val btnAnnuler = Button("Annuler") {window.close()}
+        btnPanel.addComponent(btnValider)
+        btnPanel.addComponent(btnAnnuler)
+        panel.addComponent(btnPanel)
+
+        window.component = panel
+        gui.addWindowAndWait(window)
+    }
+
+    fun menuPublierIncident(jeuConcerne: JeuVideo){
+        val window = BasicWindow("Publier un incident sur ${jeuConcerne.nom}")
+        window.setHints(listOf(Window.Hint.CENTERED))
+
+        val panel = Panel(GridLayout(2))
+
+        panel.addComponent(Label("Incident : "))
+        val txtDetails = TextBox().addTo(panel)
+
+        panel.addComponent(EmptySpace())
+
+        val btnPanel = Panel(LinearLayout(Direction.HORIZONTAL))
+
+        val btnValider = Button("Envoyer") {
+            if (txtDetails.text.isBlank()){
+                MessageDialog.showMessageDialog(gui,"Erreur", "Details vide")
+            } else {
+                // Nouveau Commentaire
+                val nouvelIncident = Incident().apply {
+                    details=txtDetails.text+"\nPlateforme : ${jeuConcerne.plateforme.libelle}"
+                    date = LocalDateTime.now()
+                    jeu = jeuConcerne
+                }
+                try {
+                    incidentDAO.persister(nouvelIncident)
+                    log.info("Envoie de l'incident ${nouvelIncident.jeu.id}")
+                    envoiIncidents.envoyer(incident = nouvelIncident)
+                    log.info("${joueurCourant.nom} à envoyé un incident sur ${jeuConcerne.nom} : ${txtDetails.text}")
+                    MessageDialog.showMessageDialog(gui,"Succès", "Incident publié pour ${jeuConcerne.nom}")
+                    window.close()
+                } catch (e: Exception) {
+                    MessageDialog.showMessageDialog(gui, "Erreur sql", e.message ?: "Erreur inconnue")
+                    log.error(e.message)
                 }
             }
         }
