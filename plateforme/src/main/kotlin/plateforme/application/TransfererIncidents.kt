@@ -27,6 +27,11 @@ class TransfererIncidents (private val consumer : KafkaConsumer<String, GenericR
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
+    //Schéma d'un incident
+    private val schema: Schema = Schema.Parser().parse(
+        this.javaClass.classLoader.getResourceAsStream("avro/Incident.avsc")
+    )
+
     private var isRunning = true;
 
     fun stop(){
@@ -43,7 +48,7 @@ class TransfererIncidents (private val consumer : KafkaConsumer<String, GenericR
                     log.info("Nouveau rapport d'incident reçu : ${record.value()}");
                     val genericIncident : GenericRecord = record.value();
 
-                    val incident_details = genericIncident.get("detail").toString()
+                    val incident_details = genericIncident.get("details").toString()
                     val timestamp = genericIncident.get("date") as Long
                     val jeu_id = genericIncident.get("jeuId") as Int
 
@@ -66,8 +71,6 @@ class TransfererIncidents (private val consumer : KafkaConsumer<String, GenericR
                     //envoyé à Editeur
                     log.info("Début du transfert")
 
-                    val schemaStream = this.javaClass.classLoader.getResourceAsStream("avro/Incident.avsc")
-                    val schema = Schema.Parser().parse(schemaStream)
 
                     val recordEnvoi = GenericData.Record(schema).apply {
                         put("details", incident_details)
