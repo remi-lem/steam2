@@ -22,6 +22,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import org.steam2.plateforme.daos.IncidentDAO
 import org.steam2.plateforme.daos.JoueurDAO
+import org.steam2.plateforme.daos.VersionJeuDAO
 import org.steam2.plateforme.plateforme.application.RecupererJeuxVideos
 import org.steam2.plateforme.plateforme.application.PlateformMenus
 import org.steam2.plateforme.plateforme.application.TransfererCommentaire
@@ -41,6 +42,7 @@ fun main() = runBlocking {
     val commentaireDAO = CommentaireDAO(emf)
     val incidentDAO = IncidentDAO(emf)
     val joueurDAO = JoueurDAO(emf)
+    val versionJeuDAO = VersionJeuDAO(emf)
 
     //paramètres Kafka
     val propsJeux = Properties()
@@ -99,7 +101,7 @@ fun main() = runBlocking {
 
     //JV
     val serviceScopeJeux = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    val serviceRecuperationJeux = RecupererJeuxVideos(consumerJeux, jeuVideoDAO, editeurDAO, genreDAO)
+    val serviceRecuperationJeux = RecupererJeuxVideos(consumerJeux, jeuVideoDAO, editeurDAO, genreDAO, versionJeuDAO)
 
     val jobServiceJeux = serviceScopeJeux.launch(Dispatchers.IO) {
         serviceRecuperationJeux.launch()
@@ -165,14 +167,14 @@ fun main() = runBlocking {
     jobServiceJeux.join()
     serviceScopeJeux.cancel()
 
-    log.info("Attente de la fermeture des services de récupération des jeux... " +
+    log.info("Attente de la fermeture des services de transfert des incidents... " +
             "(${TransfererIncidents.DELAI_ATTENTE * 2 / 1000} secondes max)")
     jobServiceIncidents.join()
     serviceScopeIncidents.cancel()
 
-    log.info("Attente de la fermeture des services de récupération des jeux... " +
+    log.info("Attente de la fermeture des services de transfert des commentaires... " +
             "(${TransfererCommentaire.DELAI_ATTENTE * 2 / 1000} secondes max)")
-    jobServiceCommentaires.cancel()
+    jobServiceCommentaires.join()
     serviceScopeCommentaires.cancel()
 
 
