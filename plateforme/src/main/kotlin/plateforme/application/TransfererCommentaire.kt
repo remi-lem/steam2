@@ -28,7 +28,12 @@ class TransfererCommentaire(private val consumer : KafkaConsumer<String, Generic
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    private var isRunning = true;
+    private var isRunning = true
+
+    //Schéma d'un commentaire
+    private val schema: Schema = Schema.Parser().parse(
+        this.javaClass.classLoader.getResourceAsStream("avro/Commentaire.avsc")
+    )
 
     fun stop(){
         isRunning = false;
@@ -46,7 +51,7 @@ class TransfererCommentaire(private val consumer : KafkaConsumer<String, Generic
 
                     val comTexte = genericCommentaire.get("commentaire").toString()
                     val timestamp = genericCommentaire.get("date") as Long
-                    val note = 5 //genericCommentaire.get("note") as Int TODO : récupérer la vrai note quand dispo
+                    val note = genericCommentaire.get("note") as Int
                     val jeu_id = genericCommentaire.get("jeuId") as Int
                     val joueur_username = genericCommentaire.get("joueurUsername").toString()
 
@@ -74,9 +79,6 @@ class TransfererCommentaire(private val consumer : KafkaConsumer<String, Generic
                     //Envoyé à l'éditeur
                     log.info("Début du transfert")
 
-                    val schemaStream = this.javaClass.classLoader.getResourceAsStream("avro/Commentaire.avsc")
-                    val schema = Schema.Parser().parse(schemaStream)
-
                     val recordEnvoi = GenericData.Record(schema).apply{
                         put("commentaire",comTexte)
                         put("date",timestamp)
@@ -91,6 +93,8 @@ class TransfererCommentaire(private val consumer : KafkaConsumer<String, Generic
 
                     // 2 flush nécessaires lors de la création du topic
                     producer.flush()
+
+                    log.info("Commentaire transférer à Editeur")
 
                 }
             }
