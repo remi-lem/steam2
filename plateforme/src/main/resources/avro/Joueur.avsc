@@ -1,0 +1,35 @@
+{
+  "type": "record",
+  "name": "Joueur",
+  "namespace": "org.steam2.plateforme.entites",
+  "fields": [
+    {
+      "name": "id",
+      "type": "int"
+    },
+    {
+      "name": "username",
+      "type": "string"
+    },
+    {
+      "name": "plateforme",
+      "type": "string"
+    },
+    {
+      "name": "nom",
+      "type": "string"
+    },
+    {
+      "name": "prenom",
+      "type": "string"
+    },
+    {
+      "name": "date_naissance",
+      "type": "datetime"
+    },
+    {
+      "name": "date_creation",
+      "type": "datetime"
+    }
+  ]
+}

@@ -1,22 +1,28 @@
 package org.steam2.plateforme.plateforme.application
 
+import com.google.common.hash.Hashing
 import com.googlecode.lanterna.gui2.BasicWindow
 import com.googlecode.lanterna.gui2.Button
+import com.googlecode.lanterna.gui2.EmptySpace
 import com.googlecode.lanterna.gui2.GridLayout
 import com.googlecode.lanterna.gui2.Label
+import com.googlecode.lanterna.gui2.LayoutManager
 import com.googlecode.lanterna.gui2.MultiWindowTextGUI
 import com.googlecode.lanterna.gui2.Panel
 import com.googlecode.lanterna.gui2.TextBox
 import com.googlecode.lanterna.gui2.dialogs.ActionListDialogBuilder
 import com.googlecode.lanterna.gui2.dialogs.MessageDialog
-import com.googlecode.lanterna.input.KeyStroke
-import com.googlecode.lanterna.terminal.Terminal
 import kotlinx.coroutines.CoroutineScope
 import org.slf4j.LoggerFactory
 import org.steam2.plateforme.daos.CommentaireDAO
 import org.steam2.plateforme.daos.EditeurDAO
 import org.steam2.plateforme.daos.GenreDAO
 import org.steam2.plateforme.daos.JeuVideoDAO
+import org.steam2.plateforme.entites.Genre
+import org.steam2.plateforme.entites.JeuVideo
+import org.steam2.plateforme.entites.Joueur
+import java.nio.charset.StandardCharsets
+import javax.security.auth.login.LoginException
 
 /**
  * Classe gérant tous les menus différents de l'application Plateforme
@@ -33,6 +39,8 @@ class PlateformMenus(
     ) {
 
     private val log = LoggerFactory.getLogger(PlateformMenus::class.java)
+    private var isAccountConnected: Boolean = false
+
 
     /**
      * Menu principal de l'application Plateforme
@@ -44,7 +52,7 @@ class PlateformMenus(
 
             try {
                 // Liste des options possibles
-                ActionListDialogBuilder()
+                val menu = ActionListDialogBuilder()
                     .setTitle("Menu principal - Plateforme")
                     .setDescription("Choisissez une action :")
                     .setCanCancel(false)
@@ -59,26 +67,70 @@ class PlateformMenus(
                         searchGame()
                         // TODO : résultat de la requête
                     }
-                    .addAction("Ma collection") {
+
+                // Si un compte est connecté
+                if(isAccountConnected) {
+                    menu.addAction("Ma collection") {
                         log.info("Ma collection")
                         // TODO : Affichage de la collection reliée au compte
-                    }
-                    .addAction("Ma liste de souhaits") {
+
+                    }.addAction("Ma liste de souhaits") {
                         log.info("Acces liste de souhaits")
                         menuWishlist()
                         // TODO : Affichage de la liste de souhait
-                    }
-                    .addAction("Mes amis") {
+
+                    }.addAction("Mes amis") {
                         log.info("Liste d'amis")
                         menuFriends()
 
-                    }
-                    .addAction("Gérer mon compte") {
+                    }.addAction("Gérer mon compte") {
                         log.info("Gerer mon compte")
                         menuManageAccount()
                     }
-                    .addAction("Quitter l'application") {
-                        exitApplication = true
+                }else{
+                    menu.addAction("Connexion / Inscription") {
+                        log.info("connexion ou inscription")
+                        menuLogRegAccount()
+                    }
+                }
+
+                menu.addAction("Quitter l'application") {
+                    exitApplication = true
+                }
+                .build()
+                .showDialog(gui)
+
+            } catch (e: Exception) {
+                log.error("Error in main plateform menus", e)
+                MessageDialog.showMessageDialog(gui, "Erreur fatale", e.message)
+            }
+        }
+    }
+
+    /**
+     * Menu permettant la connexion ou l'inscription de l'utilisateur
+     *
+     * @author Jules
+     */
+    fun menuLogRegAccount(){
+        var exitLogMenu = false
+        while(!exitLogMenu) {
+            try {
+                // Liste des options possibles
+                ActionListDialogBuilder()
+                    .setTitle("- Connexion / Inscription-")
+                    .setDescription("Choisissez une action :")
+                    .setCanCancel(false)
+                    .addAction("Connexion") {
+                        log.info("Connexion")
+                        login()
+
+                    }
+                    .addAction("Inscription") {
+                        log.info("Inscription")
+
+                    }.addAction("Fermer le menu") {
+                        exitLogMenu = true
                     }
                     .build()
                     .showDialog(gui)
@@ -89,12 +141,52 @@ class PlateformMenus(
         }
     }
 
+    fun login(): Joueur? {
+        var accountConnected:Joueur? = null
+
+        val window = BasicWindow("Authentification")
+        val panel = Panel().apply{ layoutManager= GridLayout(2) }
+
+        val txtLogin = TextBox()
+        val txtPassword = TextBox().setMask('*')
+
+        // Composant de la fenetre
+        panel.addComponent(Label("Login:"))
+        panel.addComponent(txtLogin)
+
+        panel.addComponent(Label("Mot de passe:"))
+        panel.addComponent(txtPassword)
+
+        panel.addComponent(EmptySpace())
+
+        // Boutons
+        val btnOK = Button("OK") {
+            // On vérifie le mot de passe
+            val sha256hex = Hashing.sha256()
+                .hashString(txtPassword.text, StandardCharsets.UTF_8)
+                .toString()
+            try {
+                // val editeur = joueurDAO.identifier(txtLogin.text, sha256hex)
+                 // accountConnected = editeur
+                window.close()
+            } catch (e: LoginException) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "Login ou mot de passe incorrect")
+            }
+        }
+        panel.addComponent(btnOK)
+        window.component = panel
+        gui.addWindowAndWait(window)
+
+        return Joueur()
+    }
+
     /**
      * Menu permettant d'obtenir les jeux vidéos disponibles
      *
      * @author : Jules
      */
     fun menuVGList(){
+
         var exitVGListe = false
         while(!exitVGListe) {
             try {
@@ -108,12 +200,15 @@ class PlateformMenus(
                         log.info("Affichage date d'ajout")
 
                         // Etape 1 : Afficher la liste des jeux dans la console
-                        log.info(jeuVideoDAO.getJeux(0).toString())
+                        log.info(jeuVideoDAO.getJeuxByID(0).toString())
+
+                        // Affichage des jeux
+                        displayGameList(jeuVideoDAO.getJeuxByID(0))
                     }
                     .addAction("Afficher par ordre alphabétique") {
-                        // TODO : Récupérer la liste par ordre alpha
-                        // TODO : Dans le fichier DAO, faire une requête triée par ordre alpha
                         log.info("Affichage ordre alpha")
+                        // Affichage des jeux
+                        displayGameList(jeuVideoDAO.getJeuxByName(0))
                     }
                     .addAction("Afficher par popularité") {
                         // TODO : Récupérer la liste des jeux par rapport à leur popularité
@@ -129,7 +224,9 @@ class PlateformMenus(
                 MessageDialog.showMessageDialog(gui, "Erreur fatale", e.message)
             }
         }
+
     }
+
     fun menuFriends(){
         var exitFriendsMenu = false
         while(!exitFriendsMenu) {
@@ -259,16 +356,20 @@ class PlateformMenus(
     fun searchGame(){
         val panel = Panel().apply { layoutManager = GridLayout(2) }
         val txtNameGame = TextBox()
-
         val window = BasicWindow("Chercher un jeu")
+
+        // Envoi de la requête
+        val btnOK = Button("OK"){
+            // Affichage des jeux
+            displayGameList(
+                jeuVideoDAO.researchByName(txtNameGame.text),
+                "- Résultat de la recherche -"
+            )
+            window.close()
+        }
 
         panel.addComponent(Label("Nom à chercher :"))
         panel.addComponent(txtNameGame)
-
-        val btnOK = Button("OK"){
-            // TODO : Ajouter des effets
-            window.close()
-        }
         panel.addComponent(btnOK)
 
         window.component = panel
@@ -279,23 +380,22 @@ class PlateformMenus(
      * Fonction gérant l'entrée du nom de l'ami à chercher et affichant le résultat
      *
      * TODO : Affichage du résultat de la recherche
+     * @return None
      *
-     * @author : Jules
+     * @author Jules
      */
     fun searchFriend(){
-        val panel = Panel().apply { layoutManager = GridLayout(2) }
-        val txtNameGame = TextBox()
-
         val window = BasicWindow("Chercher un ami")
 
-        panel.addComponent(Label("Pseudo à chercher :"))
-        panel.addComponent(txtNameGame)
-
-
+        val panel = Panel().apply { layoutManager = GridLayout(2) }
+        val txtNameGame = TextBox()
         val btnOK = Button("OK"){
             // TODO : Ajouter des effets
             window.close()
         }
+
+        panel.addComponent(Label("Pseudo à chercher :"))
+        panel.addComponent(txtNameGame)
         panel.addComponent(btnOK)
 
         window.component = panel
@@ -304,6 +404,9 @@ class PlateformMenus(
 
     /**
      * Fonction permettant de changer de mot de passe
+     *
+     * @param itemToChange : String, symbolise le paramètre du compte à mettre à jour
+     * @return None
      *
      * @author : Jules
      */
@@ -397,5 +500,103 @@ class PlateformMenus(
 
         // Affichage du résultat de la comparaison entre les deux entrées du nouveau mdp
         displayResult( itemToChange,firstInstance == secondInstance)
+    }
+
+    /**
+     * Affiche des différentes listes de jeux, résultantes de requête à JeuVideoDAO
+     *
+     * @param gameList : List<JeuVideo>, résultat de la requête HQL du DAO
+     * @param title : String, nom à donner à la fenêtre. De base, vaut "Liste de jeux"
+     * @return None
+     *
+     * @author Jules
+     */
+    fun displayGameList(gameList:List<JeuVideo>, title:String="- Liste de jeux- "){
+        var exitGameList = false
+
+        while(!exitGameList) {
+            try {
+                // Liste des options possibles
+                val builder = ActionListDialogBuilder()
+                    .setTitle(title)
+                    .setDescription("Choisissez une action :")
+                    .setCanCancel(false)
+
+                    for (game in gameList){
+                        builder.addAction(game.nom) {
+                            log.info(game.nom)
+                            gamePage(game)
+                        }
+                    }
+                    builder.addAction("Fermer le menu") {
+                        exitGameList = true
+                    }
+                    .build()
+                    .showDialog(gui)
+            } catch (e: Exception) {
+                log.error("Error in main plateform menus", e)
+                MessageDialog.showMessageDialog(gui, "Erreur fatale", e.message)
+            }
+        }
+    }
+
+    /**
+     * Affiche la page correspondante à un jeu
+     * - Affichage de ses caractéristiques
+     * - Possibilité d'achat
+     * - Possibilité d'ajout à la wishlist
+     *
+     * @author Jules
+     */
+    fun gamePage(jv:JeuVideo){
+
+        val panel = Panel().apply { layoutManager = GridLayout(2) }
+        val window = BasicWindow(jv.nom)
+
+        // Affichage des informations
+        panel.addComponent(Label("Éditeur : "))
+        panel.addComponent(Label(jv.editeur.nom))
+
+        panel.addComponent(Label("Plateforme : "))
+        panel.addComponent(Label(jv.plateforme.toString()))
+
+        panel.addComponent(Label("Prix : "))
+        panel.addComponent(Label(jv.prix_editeur.toString()))
+
+        panel.addComponent(Label("Genre : "))
+        for(genre:Genre in jv.genres){
+            panel.addComponent(Label(genre.toString()))
+
+        }
+        // Séparateur visuel
+        panel.addComponent(Label(""))
+        panel.addComponent(Label(""))
+
+        if(isAccountConnected){
+            // Bouton avec actions
+            val btnBuy = Button("Acheter le jeu"){
+                log.info("Acheter le jeu")
+                window.close()
+            }
+            val btnWishList = Button("Ajouter à la liste de souhaits"){
+                log.info("Ajout liste de souhait")
+                window.close()
+            }
+
+            panel.addComponent(btnBuy)
+            // Permet de mettre les boutons les uns en dessous des autres en occupant la seconde colonnes
+            panel.addComponent(EmptySpace())
+            panel.addComponent(btnWishList)
+            panel.addComponent(EmptySpace())
+        }
+
+        val btnClose = Button("Retour"){
+            window.close()
+        }
+
+        panel.addComponent(btnClose)
+
+        window.component = panel
+        gui.addWindowAndWait(window)
     }
 }

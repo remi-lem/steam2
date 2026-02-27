@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import org.steam2.plateforme.plateforme.application.RecupererJeuxVideos
 import org.steam2.plateforme.plateforme.application.PlateformMenus
@@ -28,35 +29,56 @@ private val log = LoggerFactory.getLogger("Main")
 fun main() = runBlocking {
     log.info("Démarrage de l'application de la plateforme")
 
-    //DAOS
+    // Créations des DAO
     val emf = Persistence.createEntityManagerFactory("steam2-plateforme")
     val editeurDAO = EditeurDAO(emf)
     val jeuVideoDAO = JeuVideoDAO(emf)
     val genreDAO = GenreDAO(emf)
     val commentaireDAO = CommentaireDAO(emf)
 
-    //paramètres Kafka
+    // —————— Paramètres Kafka ——————
+    // ——— Jeux ———
     val propsJeux = Properties()
     val inputStreamCommonJeux = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/common.properties")
     val inputStreamJeux = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/jeux.properties")
+
     propsJeux.load(inputStreamCommonJeux)
     propsJeux.load(inputStreamJeux)
+
     val topicJeux = propsJeux.getProperty("topic.name")
 
+    // ——— Joueurs ———
 
-    //Kafka
+    // Définition du topic à utiliser
+    val propsJoueur = Properties()
+    val inputStreamCommonJoueurs = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/common.properties")
+    val inputStreamJoueurs = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/joueur.properties")
+    propsJeux.load(inputStreamCommonJeux)
+    propsJeux.load(inputStreamJeux)
+    val topicJoueur = propsJeux.getProperty("topic.name")
+    // ———————————————————————————————
+
+
+    // —————— Kafka ——————
+    // ——— Consumer ———
     val consumerJeux = KafkaConsumer<String, GenericRecord>(propsJeux)
     consumerJeux.subscribe(listOf(topicJeux))
+
+    // ——— Producer ———
+    val producerJoueur = KafkaProducer<String, GenericRecord>(propsJoueur)
+    val serviceEnvoiJoueur = EnvoiJoueur(producerJoueur, topicJoueur, jeuVideoDAO)
+
 
 
     log.info("L'application Plateforme est prête")
 
     //récupérer les infos en arrière plan avec Co Routines Kotlin
 
-    //JV
+    // Utilisation de Coroutine et de Kafka
     val serviceScopeJeux = CoroutineScope(Dispatchers.IO + SupervisorJob())
     val serviceRecuperationJeux = RecupererJeuxVideos(consumerJeux, jeuVideoDAO, editeurDAO, genreDAO)
 
+    // Lancement du service
     val jobServiceJeux = serviceScopeJeux.launch(Dispatchers.IO) {
         serviceRecuperationJeux.launch()
     }
