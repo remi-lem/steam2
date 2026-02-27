@@ -32,4 +32,7 @@ public class Commentaire {
 
     @Column(name = "commentaire")
     private String commentaire;
+
+    @Column(name = "note")
+    private int note;
 }

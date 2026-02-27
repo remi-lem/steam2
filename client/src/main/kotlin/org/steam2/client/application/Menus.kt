@@ -1,6 +1,7 @@
 package org.steam2.client.application
 
 import com.google.common.hash.Hashing
+import com.googlecode.lanterna.TerminalSize
 import com.googlecode.lanterna.gui2.*
 import com.googlecode.lanterna.gui2.dialogs.ActionListDialogBuilder
 import com.googlecode.lanterna.gui2.dialogs.MessageDialog
@@ -22,6 +23,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 import java.util.Properties
+import java.util.regex.Pattern
 
 class Menus (
     private val gui: MultiWindowTextGUI,
@@ -227,6 +229,11 @@ class Menus (
         panel.addComponent(Label("Commentaire : "))
         val txtCommentaire = TextBox().addTo(panel)
 
+        panel.addComponent(Label("Note : "))
+        val noteBox = TextBox(TerminalSize(10,1))
+        noteBox.setValidationPattern(Pattern.compile("(10|[0-9])"))
+        panel.addComponent(noteBox)
+
         panel.addComponent(EmptySpace())
 
         val btnPanel = Panel(LinearLayout(Direction.HORIZONTAL))
@@ -234,12 +241,16 @@ class Menus (
         val btnValider = Button("Envoyer") {
             if (txtCommentaire.text.isBlank()){
                 MessageDialog.showMessageDialog(gui,"Erreur", "Commentaire vide")
+            }
+            else if (noteBox.text.isBlank()) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "Pas de note saisie")
             } else {
                 // Nouveau Commentaire
                 val nouveauCommentaire = Commentaire().apply {
                     commentaire = txtCommentaire.text
                     jeu = jeuVideoACommenter
                     joueur = joueurCourant
+                    note = noteBox.text.toInt()
                     date = LocalDateTime.now();
                 }
                 try {

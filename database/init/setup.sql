@@ -300,6 +300,7 @@ CREATE TABLE commentaire (
     date DATETIME NOT NULL,
     jeu_id INT NOT NULL,
 	joueur_id INT NOT NULL,
+	note INT NOT NULL CHECK (note BETWEEN 0 AND 10),
     CONSTRAINT fk_commentaire_jeu
         FOREIGN KEY (jeu_id) REFERENCES jeu(id),
 	CONSTRAINT fk_commentaire_joueur
