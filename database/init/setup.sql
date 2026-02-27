@@ -256,7 +256,7 @@ CREATE TABLE jeu (
 CREATE TABLE version_jeu (
     id INT AUTO_INCREMENT PRIMARY KEY,
     jeu_id INT NOT NULL,
-    commentaire_editeur VARCHAR(1024) NOT NULL,
+    commentaire_editeur VARCHAR(1024),
     generation INT NOT NULL,
     revision INT NOT NULL DEFAULT 0,
     correction INT NOT NULL DEFAULT 0,

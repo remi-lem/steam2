@@ -2,11 +2,15 @@ package org.steam2.client.entites;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
 @Table(name = "session")
 @Getter
+@Setter
 public class Session{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,5 +29,5 @@ public class Session{
     private Integer tempsJoueM;
 
     @Column(name="date_session")
-    private Date dayPlayed;
+    private LocalDateTime datePlayed;
 }

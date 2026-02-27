@@ -36,6 +36,7 @@ fun main() = runBlocking {
     val jeuJoueurDAO = JeuJoueurDAO(emf)
     val incidentDAO = IncidentDAO(emf)
     val genreDAO = GenreDAO(emf)
+    val sessionDAO = SessionDAO(emf)
 
     // Récupération du paramétrage Kafka
     val propsJeuxKafka = Properties()
@@ -83,7 +84,7 @@ fun main() = runBlocking {
     val screen = TerminalScreen(terminal)
     screen.startScreen()
     val gui = MultiWindowTextGUI(screen)
-    val menus = Menus(gui,joueurDAO,jeuVideoDAO, jeuJoueurDAO, commentaireDAO, incidentDAO, serviceEnvoiCommentaires, serviceEnvoiIncidents)
+    val menus = Menus(gui,joueurDAO,jeuVideoDAO, jeuJoueurDAO, commentaireDAO, incidentDAO, sessionDAO, serviceEnvoiCommentaires, serviceEnvoiIncidents)
     log.info("L'application client est prête")
 
     // lancement de l'interface
