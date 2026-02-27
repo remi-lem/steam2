@@ -166,8 +166,7 @@ CREATE TABLE incident (
 );
 
 CREATE TABLE joueur (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
+    username VARCHAR(50) PRIMARY KEY ,
     plateforme VARCHAR(50) NOT NULL,
     nom VARCHAR(50) NOT NULL,
     prenom VARCHAR(50) NOT NULL,
@@ -177,14 +176,14 @@ CREATE TABLE joueur (
 
 CREATE TABLE jeu_joueur (
     jeu_id INT,
-    joueur_id INT,
+    joueur_username VARCHAR(50),
     temps_jeu TIME NOT NULL,
     CONSTRAINT pk_jeu_joueur
-        PRIMARY KEY (jeu_id,joueur_id),
+        PRIMARY KEY (jeu_id,joueur_username),
     CONSTRAINT fk_jeu_joueur_jeu_id
         FOREIGN KEY (jeu_id) REFERENCES jeu(id),
     CONSTRAINT fk_jeu_joueur_joueur_id
-        FOREIGN KEY (joueur_id) REFERENCES joueur(id)
+        FOREIGN KEY (joueur_username) REFERENCES joueur(username)
 );
 
 CREATE TABLE commentaire (
@@ -193,33 +192,33 @@ CREATE TABLE commentaire (
     note INT NOT NULL CHECK (note BETWEEN 0 AND 10),
     date DATETIME NOT NULL,
     jeu_id INT NOT NULL,
-    joueur_id INT NOT NULL,
+    joueur_username VARCHAR(50) NOT NULL,
     CONSTRAINT fk_commentaire_jeu
         FOREIGN KEY (jeu_id) REFERENCES jeu(id),
     CONSTRAINT fk_commentaire_joueur
-        FOREIGN KEY (joueur_id) REFERENCES joueur(id)
+        FOREIGN KEY (joueur_username) REFERENCES joueur(username)
 );
 
 CREATE TABLE amitie (
-    joueur1_id INT,
-    joueur2_id INT,
+    joueur1_username VARCHAR(50),
+    joueur2_username VARCHAR(50),
     CONSTRAINT pk_amitie
-        PRIMARY KEY (joueur1_id,joueur2_id),
-    CONSTRAINT fk_amitie_joueur1_id
-        FOREIGN KEY (joueur1_id) REFERENCES joueur(id),
-    CONSTRAINT fk_amitie_joueur2_id
-        FOREIGN KEY (joueur2_id) REFERENCES joueur(id),
+        PRIMARY KEY (joueur1_username,joueur2_username),
+    CONSTRAINT fk_amitie_joueur1_username
+        FOREIGN KEY (joueur1_username) REFERENCES joueur(username),
+    CONSTRAINT fk_amitie_joueur2_username
+        FOREIGN KEY (joueur2_username) REFERENCES joueur(username),
     CONSTRAINT check_amitie
-        CHECK (joueur1_id <> joueur2_id) -- 2 joueurs différents
+        CHECK (joueur1_username <> joueur2_username) -- 2 joueurs différents
 );
 
 CREATE TABLE abonnement (
-    joueur_id INT,
+    joueur_username VARCHAR(50),
     editeur_id INT,
     CONSTRAINT pk_abonnement
-        PRIMARY KEY (joueur_id,editeur_id),
+        PRIMARY KEY (joueur_username,editeur_id),
     CONSTRAINT fk_abonnement_joueur_id
-        FOREIGN KEY (joueur_id) REFERENCES joueur(id),
+        FOREIGN KEY (joueur_username) REFERENCES joueur(username),
     CONSTRAINT fk_abonnement_editeur_id
         FOREIGN KEY (editeur_id) REFERENCES editeur(id)
 );
@@ -231,6 +230,8 @@ INSERT INTO editeur(type,
 VALUES ('INDEPENDANT',
         'remiCorp'
        );
+
+INSERT INTO `joueur` (`username`, `nom`, `prenom`, `plateforme`, `date_naissance`, `date_creation`) VALUES ( 'nino', 'keravel', 'nino', 'LINUX', '2004-05-04 22:54:16', '2026-02-26 21:54:16.000000');
 
 
 -- CREATION DES TABLES POUR LE CLIENT
