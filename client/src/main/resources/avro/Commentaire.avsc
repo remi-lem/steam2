@@ -15,8 +15,16 @@
 			}
 		},
 		{
+		    "name": "note",
+		    "type": "int"
+		},
+		{
 			"name": "jeuId",
 			"type": "int"
-		}
+		},
+        {
+            "name": "joueurUsername",
+            "type": "string"
+        }
 	]
 }

@@ -23,7 +23,7 @@ public class JeuJoueur {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="joueur_id")
+    @JoinColumn(name="joueur_username")
     private Joueur joueur;
 
     @Column(name="temps_jeu")
