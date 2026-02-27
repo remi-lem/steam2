@@ -17,6 +17,10 @@
         {
             "name":"jeuId",
             "type":"int"
+        },
+        {
+            "name":"joueurId",
+            "type":"int"
         }
     ]
 }
