@@ -495,14 +495,16 @@ class Menus(private val gui: MultiWindowTextGUI,
                 MessageDialog.showMessageDialog(gui, "Erreur", "Merci de renseigner un commentaire")
             } else {
                 try {
-                    versionDAO.publierPatch(cbJeux.selectedItem, modifications, txtCommentaire.text)
+                    val newVersion: VersionJeu = versionDAO.publierPatch(cbJeux.selectedItem, modifications, txtCommentaire.text)
 
-                    // TODO envoi sur le topic kafka
+                    // Envoi sur Kafka
+                    serviceEnvoiJeux.envoyer(cbJeux.selectedItem, newVersion)
 
                     log.info("Un patch a été publié sur le jeu ${cbJeux.selectedItem.nom}")
                     MessageDialog.showMessageDialog(gui, "Succès", "Patch publié")
                     window.close()
                 } catch (e: Exception) {
+                    log.error("Erreur", e)
                     MessageDialog.showMessageDialog(gui, "Erreur SQL", e.message ?: "Erreur inconnue")
                 }
             }

@@ -3,11 +3,13 @@ package org.steam2.editeur.daos;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import kotlin.Pair;
+import org.hibernate.Hibernate;
 import org.steam2.editeur.entites.DetailModifPatch;
 import org.steam2.editeur.entites.JeuVideo;
 import org.steam2.editeur.entites.VersionJeu;
 import org.steam2.editeur.entites.type.TypeModificationPatch;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,10 +42,16 @@ public class VersionDAO {
      * @param jeuVideo le jeu concerné
      * @param modifications la liste des modifications contenues dans le patch
      * @param commentaire le commentaire de l'éditeur sur le patch
+     * @return VersionJeu la nouvelle entité VersionJeu
      */
-    public void publierPatch(JeuVideo jeuVideo, List<Pair<TypeModificationPatch, String>> modifications, String commentaire) {
+    public VersionJeu publierPatch(JeuVideo jeuVideo, List<Pair<TypeModificationPatch, String>> modifications, String commentaire) {
         try (EntityManager em = emf.createEntityManager()) {
+
             em.getTransaction().begin();
+
+            VersionJeu newVersion = new VersionJeu();
+
+            newVersion.setListeDesModifications(new ArrayList<>());
 
             // changement de la version
             VersionJeu version = em.createQuery(
@@ -51,24 +59,35 @@ public class VersionDAO {
                 .setParameter("id", jeuVideo.getId())
                 .setMaxResults(1)
                 .getSingleResult();
+
+            newVersion.setJeu(version.getJeu());
+            newVersion.setGeneration(version.getGeneration());
+            newVersion.setRevision(version.getRevision());
+
             Integer correction = version.getCorrection();
             correction++;
-            version.setCorrection(correction);
+            newVersion.setCorrection(correction);
 
             // ajout du commentaire
-            version.setCommentaireEditeur(commentaire);
+            newVersion.setCommentaireEditeur(commentaire);
+
+            em.persist(newVersion);
 
             // enregistrement des modifications
             for (Pair<TypeModificationPatch, String> modif : modifications) {
                 DetailModifPatch detail = new DetailModifPatch();
                 detail.setTypeModificationPatch(modif.getFirst());
                 detail.setCommentaire(modif.getSecond());
-                detail.setVersion(version);
+                detail.setVersion(newVersion);
 
                 em.persist(detail);
+
+                newVersion.getListeDesModifications().add(detail);
             }
 
             em.getTransaction().commit();
+
+            return newVersion;
         }
     }
 }

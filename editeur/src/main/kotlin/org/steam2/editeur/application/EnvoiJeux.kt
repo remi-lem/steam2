@@ -44,13 +44,35 @@ class EnvoiJeux(private val producer: KafkaProducer<String, GenericRecord>,
 
             put("jeu_parent_id", jeu.jeuParent?.id) // null si non DLC
 
-            put("commentaire_editeur", version.commentaireEditeur)
-
             val versionSchema = schema.getField("version").schema()
             val versionRecord = GenericData.Record(versionSchema).apply {
+                put("commentaire_editeur", version.commentaireEditeur)
+
                 put("generation", version.generation)
                 put("revision", version.revision)
                 put("correction", version.correction)
+
+                // Cas d'un patch
+                if(version.listeDesModifications != null && version.listeDesModifications.isNotEmpty()) {
+                    val arraySchema = versionSchema.getField("listeDesModifications").schema().types[1]
+                    val itemSchema = arraySchema.elementType
+
+                    val avroList = GenericData.Array<GenericRecord>(version.listeDesModifications.size, arraySchema)
+
+                    version.listeDesModifications.forEach { modif ->
+                        val modifRecord = GenericData.Record(itemSchema).apply {
+                            val enumSymbol = GenericData.EnumSymbol(itemSchema.getField("type_modification").schema(), modif.typeModificationPatch.name)
+                            put("type_modification", enumSymbol)
+                            put("commentaire", modif.commentaire)
+                        }
+                        avroList.add(modifRecord)
+                    }
+
+                    put("listeDesModifications", avroList)
+                }
+                else {
+                    put("listeDesModifications", null)
+                }
             }
             put("version", versionRecord)
 
