@@ -55,6 +55,7 @@ class Menus (
                     .setDescription("Choisissez une action")
                     .setCanCancel(false)
                     .addAction("Consulter les jeux en magasin") { menuMagasin() }
+                    .addAction("Consulter les jeux possédés") { menuBibliotheque() }
                     .addAction ("Quitter l'application") {
                         quitter = true
                     }
@@ -92,6 +93,25 @@ class Menus (
             log.error(e.toString())
         }
 
+    }
+
+    fun menuBibliotheque(page: Int = 0){
+        try {
+            val listJeux = jeuJoueurDAO.JeuxPossedes(joueurCourant)
+            menuConsultationGeneriqueJeu(
+                page = page,
+                titre = "Jeux possédés",
+                messageVide = "Aucun jeu en possédé",
+                items = listJeux,
+                itemMapper = { jeu ->
+                    "${jeu.nom} : ${sessionDAO.getTempsJoueTotal(joueurCourant,jeu)}"
+                },
+                callback = { p -> menuBibliotheque(p) }
+            )
+
+        } catch (e: Exception) {
+            log.error(e.toString())
+        }
     }
 
     fun menuAfficherDLCs(jeuVideo: JeuVideo, page: Int = 0) {
