@@ -38,6 +38,31 @@
         "type": "array",
         "items": "string"
       }
+    },
+    {
+      "name": "commentaire_editeur",
+      "type": "string"
+    },
+    {
+      "name": "version",
+      "type": {
+        "type": "record",
+        "name": "Version",
+        "fields": [
+          {
+            "name": "generation",
+            "type": "int"
+          },
+          {
+            "name": "revision",
+            "type": "int"
+          },
+          {
+            "name": "correction",
+            "type": "int"
+          }
+        ]
+      }
     }
   ]
 }

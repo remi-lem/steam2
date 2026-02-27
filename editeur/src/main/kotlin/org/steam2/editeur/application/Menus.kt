@@ -383,7 +383,7 @@ class Menus(private val gui: MultiWindowTextGUI,
                     versionDAO.persister(version)
 
                     // Envoi sur le topic kafka
-                    serviceEnvoiJeux.envoyer(nouveauJeu)
+                    serviceEnvoiJeux.envoyer(nouveauJeu, version)
 
                     log.info("Le $label ${nouveauJeu.nom} a été publié")
                     MessageDialog.showMessageDialog(gui, "Succès", "$label publié")
