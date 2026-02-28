@@ -131,7 +131,7 @@ class Menus (
                 callback = { p -> menuMagasin(p) }
             )
         } catch (e: Exception) {
-            TODO("Erreur pour affichage DLCs")
+            log.error("Erreur en listant les DLCs : ${e.message}")
         }
     }
 
@@ -208,8 +208,10 @@ class Menus (
         actionsBuilder.setDescription("Choisissez une actions : ")
 
         if (jeuJoueurDAO.possede(joueurCourant,jeuVideoConsute)) {
-            actionsBuilder.addAction ("Jouer"){
-                menuJouer(jeuVideoConsute)
+            if (jeuVideoConsute.jeuParent == null) { // ne pas afficher de bouton jouer pour les dlc
+                actionsBuilder.addAction("Jouer") {
+                    menuJouer(jeuVideoConsute)
+                }
             }
             actionsBuilder.addAction ("Consulter les DLCs"){
                 menuAfficherDLCs(jeuVideoConsute)

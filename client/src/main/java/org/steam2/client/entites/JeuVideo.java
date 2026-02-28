@@ -32,7 +32,7 @@ public class JeuVideo {
     @JoinColumn(name = "jeu_parent_id")
     private JeuVideo jeuParent;
 
-    @OneToMany(mappedBy = "jeuParent")
+    @OneToMany(mappedBy = "jeuParent", fetch = FetchType.EAGER)
     private List<JeuVideo> dlcs;
 
     @Column(name="prix_editeur")

@@ -30,9 +30,10 @@ public class JeuVideoDAO {
         }
     }
 
+
     public List<JeuVideo> recupListeJeux() {
         try (EntityManager em = emf.createEntityManager()){
-            return em.createQuery("FROM JeuVideo ORDER BY nom DESC", JeuVideo.class)
+            return em.createQuery("FROM JeuVideo jv WHERE jv.jeuParent IS NULL ORDER BY jv.nom DESC", JeuVideo.class) // On exclu les DLCs
                     .getResultList();
         }
     }

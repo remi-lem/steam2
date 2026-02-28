@@ -33,18 +33,17 @@ class RecupJeu(private val consumer: KafkaConsumer<String, GenericRecord>,
         isRunning = false;
     }
 
-    suspend fun launch(){
+    fun launch(){
         try{
             while(isRunning){
                 val records = consumer.poll(Duration.ofMillis(DELAI_ATTENTE))
-
+                records.isEmpty
                 for (record in records){
                     log.info("Nouveau jeu reçu : ${record.value()}")
                     val genericJeu: GenericRecord = record.value()
 
                     val jeu_id = genericJeu.get("id") as Int
                     val jeu_nom = genericJeu.get("nom").toString()
-                    val editeur_id = genericJeu.get("editeur_id") as Int
                     val prix_editeur = BigDecimal.valueOf((genericJeu.get("prix") as Float).toDouble())
 
                     val plateformeStr = genericJeu.get("plateforme").toString()

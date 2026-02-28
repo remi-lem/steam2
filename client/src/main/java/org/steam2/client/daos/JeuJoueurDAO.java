@@ -35,7 +35,7 @@ public class JeuJoueurDAO {
     }
     public List<JeuVideo> JeuxPossedes(Joueur joueur){
         try (EntityManager em = emf.createEntityManager()){
-            TypedQuery<JeuVideo> query = em.createQuery("SELECT jeu from JeuVideo jeu JOIN JeuJoueur jj ON jeu = jj.jeuVideo WHERE jj.joueur = :joueur", JeuVideo.class)
+            TypedQuery<JeuVideo> query = em.createQuery("SELECT jeu from JeuVideo jeu JOIN JeuJoueur jj ON jeu = jj.jeuVideo WHERE jj.joueur = :joueur AND jeu.jeuParent IS NULL", JeuVideo.class)
                     .setParameter("joueur",joueur);
             return query.getResultList();
         }
