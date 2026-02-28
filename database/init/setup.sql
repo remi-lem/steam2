@@ -122,6 +122,8 @@ CREATE TABLE jeu (
     plateforme VARCHAR(50) NOT NULL,
     jeu_parent_id INT,
     prix_editeur DECIMAL(5,2) NOT NULL CHECK (prix_editeur >=0),
+    prix_vente DECIMAL(5,2) NOT NULL CHECK (prix_vente >=0),
+    note DECIMAL(4,2),
     CONSTRAINT fk_jeu_editeur_id
      FOREIGN KEY (editeur_id) REFERENCES editeur(id),
     CONSTRAINT fk_jeu_parent_id
@@ -129,7 +131,7 @@ CREATE TABLE jeu (
 );
 
 CREATE TABLE version_jeu (
-    id INT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     jeu_id INT NOT NULL,
     commentaire_editeur VARCHAR(1024) NOT NULL,
     generation INT NOT NULL,
@@ -245,6 +247,8 @@ CREATE TABLE jeu (
     plateforme VARCHAR(50) NOT NULL,
     jeu_parent_id INT,
     prix_editeur DECIMAL(5,2) NOT NULL CHECK (prix_editeur >=0),
+    prix_vente DECIMAL(5,2) NOT NULL CHECK (prix_vente >=0),
+	note DECIMAL(4,2),
     CONSTRAINT fk_jeu_parent_id
         FOREIGN KEY (jeu_parent_id) REFERENCES jeu(id)
 );
@@ -252,7 +256,7 @@ CREATE TABLE jeu (
 CREATE TABLE version_jeu (
     id INT AUTO_INCREMENT PRIMARY KEY,
     jeu_id INT NOT NULL,
-    commentaire_editeur VARCHAR(1024) NOT NULL,
+    commentaire_editeur VARCHAR(1024),
     generation INT NOT NULL,
     revision INT NOT NULL DEFAULT 0,
     correction INT NOT NULL DEFAULT 0,
@@ -298,6 +302,7 @@ CREATE TABLE commentaire (
     date DATETIME NOT NULL,
     jeu_id INT NOT NULL,
 	joueur_id INT NOT NULL,
+	note INT NOT NULL CHECK (note BETWEEN 0 AND 10),
     CONSTRAINT fk_commentaire_jeu
         FOREIGN KEY (jeu_id) REFERENCES jeu(id),
 	CONSTRAINT fk_commentaire_joueur
@@ -328,6 +333,22 @@ CREATE TABLE jeu_joueur (
         FOREIGN KEY (jeu_id) REFERENCES jeu(id)
 );
 
+CREATE TABLE genre (
+   id INT AUTO_INCREMENT PRIMARY KEY,
+   nom VARCHAR(50) NOT NULL UNIQUE
+);
+
+
+CREATE TABLE jeu_genre (
+   jeu_id INT,
+   genre_id INT,
+   CONSTRAINT pk_jeu_genre
+       PRIMARY KEY (jeu_id, genre_id),
+   CONSTRAINT fk_jeu_genre_jeu_id
+       FOREIGN KEY (jeu_id) REFERENCES jeu(id),
+   CONSTRAINT fk_jeu_genre_genre_id
+       FOREIGN KEY (genre_id) REFERENCES genre(id)
+);
 -- Ajout de joueur dans la base client
 
 INSERT INTO `joueur` (`id`, `username`, `password`, `nom`, `prenom`, `solde`, `date_naissance`, `date_creation`) VALUES (NULL, 'nino', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', 'keravel', 'nino', '100', '2004-05-04 22:54:16', '2026-02-26 21:54:16.000000');

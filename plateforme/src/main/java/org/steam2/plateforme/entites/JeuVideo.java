@@ -43,6 +43,12 @@ public class JeuVideo {
     @Column(name="prix_editeur")
     private BigDecimal prix_editeur;
 
+    @Column(name="prix_vente")
+    private BigDecimal prix_vente;
+
+    @Column(name="note")
+    private BigDecimal note;
+
     @ManyToMany
     @JoinTable(
             name = "jeu_genre",

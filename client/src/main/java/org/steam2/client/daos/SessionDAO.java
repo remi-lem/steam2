@@ -22,10 +22,11 @@ public class SessionDAO {
     }
 
     public List<Session> getJoueurJeuSessions(Joueur joueur, JeuVideo jeuVideo){
-        Integer jour_id = joueur.getId();
-        Integer jeu_id = jeuVideo.getId();
         try (EntityManager em = emf.createEntityManager()){
-            return em.createQuery("FROM Session as s WHERE s.id = :jeu_id AND s.id = :joueur_id", Session.class).getResultList();
+            return em.createQuery("FROM Session as s WHERE s.joueur = :joueur AND s.jeu = :jeu", Session.class)
+                    .setParameter("joueur",joueur)
+                    .setParameter("jeu",jeuVideo)
+                    .getResultList();
         }
     }
 

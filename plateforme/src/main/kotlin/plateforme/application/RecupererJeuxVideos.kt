@@ -6,8 +6,10 @@ import org.slf4j.LoggerFactory
 import org.steam2.plateforme.daos.EditeurDAO
 import org.steam2.plateforme.daos.GenreDAO
 import org.steam2.plateforme.daos.JeuVideoDAO
+import org.steam2.plateforme.daos.VersionJeuDAO
 import org.steam2.plateforme.entites.Genre
 import org.steam2.plateforme.entites.JeuVideo
+import org.steam2.plateforme.entites.VersionJeu
 import org.steam2.plateforme.entites.type.TypeEditeur
 import org.steam2.plateforme.plateforme.entites.type.Plateforme
 import java.math.BigDecimal
@@ -18,7 +20,7 @@ import java.time.Duration
  * @author Wilhem
  */
 class RecupererJeuxVideos(private val consumer: KafkaConsumer<String, GenericRecord>,
-                          private val jeuVideoDAO: JeuVideoDAO, private val editeurDAO: EditeurDAO, private val genreDAO: GenreDAO
+                          private val jeuVideoDAO: JeuVideoDAO, private val editeurDAO: EditeurDAO, private val genreDAO: GenreDAO, private val versionJeuDAO: VersionJeuDAO
 ) {
 
     companion object {
@@ -58,12 +60,14 @@ class RecupererJeuxVideos(private val consumer: KafkaConsumer<String, GenericRec
                         log.info("Nouveau jeu ! creation...")
                         jeu = JeuVideo()
                         jeu.id = jeu_id
+                        jeu.prix_vente = prix_editeur
                     } else {
                         log.info("Jeu existant ! Mise à jour")
                     }
 
                     jeu.nom = jeu_nom
                     jeu.prix_editeur = prix_editeur
+
                     jeu.plateforme = Plateforme.valueOf(plateformeStr)
 
                     val editeur = editeurDAO.getEditeurById(editeur_id)
@@ -101,7 +105,34 @@ class RecupererJeuxVideos(private val consumer: KafkaConsumer<String, GenericRec
 
                     jeuVideoDAO.persister(jeu)
 
+                    //Une fois persister on calcul son prix de vente
+                    jeuVideoDAO.majPrixVenteJeu(jeu);
+
                     log.info("Jeu sauvegardé : id=$jeu_id")
+
+                    //VERSION DU JEU
+                    log.info("Enregistrement de la version du jeu")
+
+                    var commentaire_editeur = genericJeu.get("commentaire_editeur").toString()
+                    val version = genericJeu.get("version") as GenericRecord
+                    val generation = version.get("generation") as Int
+                    val revision = version.get("revision") as Int
+                    val correction = version.get("correction") as Int
+
+                    // Ne pas crash si aucun commentaire n'est mis
+                    if (commentaire_editeur == null){
+                        commentaire_editeur = ""
+                    }
+
+                    val versionJeu = VersionJeu()
+                    versionJeu.jeu = jeu
+                    versionJeu.commentaireEditeur = commentaire_editeur
+                    versionJeu.generation = generation
+                    versionJeu.revision = revision
+                    versionJeu.correction = correction
+
+                    versionJeuDAO.persister(versionJeu)
+                    log.info("Version jeu enregistré : $generation.$revision.$correction")
                 }
             }
         } finally {

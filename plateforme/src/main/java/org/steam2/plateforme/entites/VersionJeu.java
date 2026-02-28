@@ -14,6 +14,7 @@ import lombok.Setter;
 @Setter
 public class VersionJeu {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
 

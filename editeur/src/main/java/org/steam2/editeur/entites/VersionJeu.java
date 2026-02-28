@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
  * Entité VersionJeu
  * @author remi
@@ -35,6 +37,9 @@ public class VersionJeu {
 
     @Column(name = "correction")
     private Integer correction;
+
+    @OneToMany(mappedBy = "version", fetch = FetchType.LAZY)
+    private List<DetailModifPatch> listeDesModifications;
 
     public String getVersionString() {
         return generation + "." + revision + "." + correction;

@@ -33,4 +33,11 @@ public class JeuJoueurDAO {
             return !result.isEmpty();
         }
     }
+    public List<JeuVideo> JeuxPossedes(Joueur joueur){
+        try (EntityManager em = emf.createEntityManager()){
+            TypedQuery<JeuVideo> query = em.createQuery("SELECT jeu from JeuVideo jeu JOIN JeuJoueur jj ON jeu = jj.jeuVideo WHERE jj.joueur = :joueur", JeuVideo.class)
+                    .setParameter("joueur",joueur);
+            return query.getResultList();
+        }
+    }
 }

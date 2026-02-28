@@ -1,6 +1,7 @@
 package org.steam2.client.application
 
 import com.google.common.hash.Hashing
+import com.googlecode.lanterna.TerminalSize
 import com.googlecode.lanterna.gui2.*
 import com.googlecode.lanterna.gui2.dialogs.ActionListDialogBuilder
 import com.googlecode.lanterna.gui2.dialogs.MessageDialog
@@ -10,18 +11,18 @@ import org.steam2.client.daos.IncidentDAO
 import org.steam2.client.daos.JeuJoueurDAO
 import org.steam2.client.daos.JeuVideoDAO
 import org.steam2.client.daos.JoueurDAO
+import org.steam2.client.daos.SessionDAO
 import org.steam2.client.entites.Commentaire
 import org.steam2.client.entites.Incident
 import org.steam2.client.entites.JeuJoueur
 import org.steam2.client.entites.JeuVideo
 import org.steam2.client.entites.Joueur
+import org.steam2.client.entites.Session
 import org.steam2.client.exceptions.LoginException
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
-import java.util.Locale
 import java.util.Properties
+import java.util.regex.Pattern
 
 class Menus (
     private val gui: MultiWindowTextGUI,
@@ -30,6 +31,7 @@ class Menus (
     private val jeuJoueurDAO: JeuJoueurDAO,
     private val commentaireDAO: CommentaireDAO,
     private val incidentDAO: IncidentDAO,
+    private val sessionDAO: SessionDAO,
     private val envoiCommentaires: EnvoiCommentaires,
     private val envoiIncidents: EnvoiIncidents
 ) {
@@ -42,17 +44,18 @@ class Menus (
      * @author Nino
      */
     fun mainMenu(joueur: Joueur) {
-        var quitter = false;
+        var quitter = false
 
-        this.joueurCourant = joueur;
+        this.joueurCourant = joueur
 
         while (!quitter){
             try {
                 ActionListDialogBuilder()
-                    .setTitle("Menu principal $joueurCourant")
+                    .setTitle("Menu principal ${joueurCourant.nom}")
                     .setDescription("Choisissez une action")
                     .setCanCancel(false)
                     .addAction("Consulter les jeux en magasin") { menuMagasin() }
+                    .addAction("Consulter les jeux possédés") { menuBibliotheque() }
                     .addAction ("Quitter l'application") {
                         quitter = true
                     }
@@ -79,17 +82,36 @@ class Menus (
                 items = listJeux,
                 itemMapper = {
                     jeu ->
-                    var strPossede = "${jeu.prix_editeur} "
-                    if (jeuJoueurDAO.possede(joueurCourant, jeu)) {strPossede = "possédé"};
+                    var strPossede = "${jeu.prix_vente} "
+                    if (jeuJoueurDAO.possede(joueurCourant, jeu)) {strPossede = "possédé"}
                     "${jeu.nom} : $strPossede"
                 },
                 callback = {p -> menuMagasin(p)}
             )
 
         } catch (e: Exception) {
-            TODO("Erreur pour affichage jeux")
+            log.error(e.toString())
         }
 
+    }
+
+    fun menuBibliotheque(page: Int = 0){
+        try {
+            val listJeux = jeuJoueurDAO.JeuxPossedes(joueurCourant)
+            menuConsultationGeneriqueJeu(
+                page = page,
+                titre = "Jeux possédés",
+                messageVide = "Aucun jeu en possédé",
+                items = listJeux,
+                itemMapper = { jeu ->
+                    "${jeu.nom} : ${sessionDAO.getTempsJoueTotal(joueurCourant,jeu)}"
+                },
+                callback = { p -> menuBibliotheque(p) }
+            )
+
+        } catch (e: Exception) {
+            log.error(e.toString())
+        }
     }
 
     fun menuAfficherDLCs(jeuVideo: JeuVideo, page: Int = 0) {
@@ -103,7 +125,7 @@ class Menus (
                     var strPossede = "${dlc.prix_editeur} "
                     if (jeuJoueurDAO.possede(joueurCourant, dlc)) {
                         strPossede = "possédé"
-                    };
+                    }
                     "${dlc.nom} : $strPossede"
                 },
                 callback = { p -> menuMagasin(p) }
@@ -139,7 +161,7 @@ class Menus (
         val builder = ActionListDialogBuilder()
             .setTitle("$titre (Page ${page + 1}/$totalPages)")
 
-        // on determine quels items sont affichés sur la page actuelle
+        // on détermine quels items sont affichés sur la page actuelle
         val startIndex = page * pageSize
         val pageItems = items.drop(startIndex).take(pageSize)
 
@@ -147,13 +169,6 @@ class Menus (
         if (page > 0) {
             builder.addAction("<<< PAGE PRÉCÉDENTE") { callback(page - 1) }
         }
-
-        // Mise en forme des dates
-        val formatterDate = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
-            .withLocale(Locale.FRENCH)
-        val formatterDateTime = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.MEDIUM)
-            .withLocale(Locale.FRENCH)
-
         // contenu
         pageItems.forEach { item ->
             val label = itemMapper(item)
@@ -175,20 +190,26 @@ class Menus (
     }
 
     /**
-     * Ouvre une fenètre pour afficher les informations sur un jeu
+     * Ouvre une fenêtre pour afficher les informations sur un jeu
      * @param jeuVideoConsute le jeu à afficher
      * @author nino
      */
     fun menuAfficherJeu(jeuVideoConsute: JeuVideo){
         val actionsBuilder = ActionListDialogBuilder()
 
-        actionsBuilder.setTitle("Jeu : ${jeuVideoConsute.nom}")
+        val noteJeu : String = if (jeuVideoConsute.note == null){
+            "Pas de notes"
+        } else {
+            "note : ${jeuVideoConsute.note}"
+        }
 
-        actionsBuilder.setDescription("Choisicez une actions")
+        actionsBuilder.setTitle("Jeu : ${jeuVideoConsute.nom} ($noteJeu)")
+
+        actionsBuilder.setDescription("Choisissez une actions : ")
 
         if (jeuJoueurDAO.possede(joueurCourant,jeuVideoConsute)) {
             actionsBuilder.addAction ("Jouer"){
-                TODO("Implementer l'action de jouer")
+                menuJouer(jeuVideoConsute)
             }
             actionsBuilder.addAction ("Consulter les DLCs"){
                 TODO("Implementer la visualisation des DLCs")
@@ -196,10 +217,10 @@ class Menus (
             }
             actionsBuilder.addAction("Envoyer un commentaire") { menuPublierCommentaire(jeuVideoConsute) }
             actionsBuilder.addAction("Envoyer un incident") { menuPublierIncident(jeuVideoConsute) }
-        } else if (joueurCourant.solde >= jeuVideoConsute.prix_editeur) {
-            actionsBuilder.addAction ("Acheter (prix:${jeuVideoConsute.prix_editeur}"){
-                joueurCourant.solde = joueurCourant.solde.subtract(jeuVideoConsute.prix_editeur)
-                joueurDAO.merge(joueurCourant);
+        } else if (joueurCourant.solde >= jeuVideoConsute.prix_vente) {
+            actionsBuilder.addAction ("Acheter (prix:${jeuVideoConsute.prix_vente})"){
+                joueurCourant.solde = joueurCourant.solde.subtract(jeuVideoConsute.prix_vente)
+                joueurDAO.merge(joueurCourant)
                 val achat = JeuJoueur().apply {
                     jeuVideo = jeuVideoConsute
                     joueur = joueurCourant
@@ -218,6 +239,56 @@ class Menus (
 
     }
 
+    fun menuJouer(jeuVideo: JeuVideo) {
+        log.info("Entree dans mle menu jouer")
+        val window = BasicWindow("Jouer ${jeuVideo.nom}")
+        window.setHints(listOf(Window.Hint.CENTERED))
+
+        val panel = Panel(GridLayout(2))
+
+        panel.addComponent(Label("Temps déja joué : ${sessionDAO.getTempsJoueTotal(joueurCourant,jeuVideo)} minutes"))
+
+        panel.addComponent(EmptySpace())
+
+        panel.addComponent(Label("Temps a jouer (en minutes) : "))
+        val tempsBox = TextBox()
+        tempsBox.setValidationPattern(Pattern.compile("[0-9]+"))
+        panel.addComponent(tempsBox)
+        val btnPanel = Panel(LinearLayout(Direction.HORIZONTAL))
+
+        val btnValider = Button("Envoyer") {
+            if (tempsBox.text.isBlank()){
+                MessageDialog.showMessageDialog(gui,"Erreur", "Temps joué vide")
+            } else {
+                // Nouvelle session
+                val nouvelleSession = Session().apply {
+                    joueur = joueurCourant
+                    tempsJoueM = tempsBox.text.toInt()
+                    jeu = jeuVideo
+                    datePlayed = LocalDateTime.now()
+                }
+
+                try {
+                    sessionDAO.persister(nouvelleSession)
+                    window.close()
+                } catch (e: Exception) {
+                    MessageDialog.showMessageDialog(gui, "Erreur sql", e.message ?: "Erreur inconnue")
+                    log.error(e.stackTrace.toString())
+                }
+            }
+
+        }
+
+        val btnAnnuler = Button("Annuler") {window.close()}
+        btnPanel.addComponent(btnValider)
+        btnPanel.addComponent(btnAnnuler)
+        panel.addComponent(btnPanel)
+
+        window.component = panel
+        gui.addWindowAndWait(window)
+
+    }
+
     fun menuPublierCommentaire(jeuVideoACommenter: JeuVideo){
         val window = BasicWindow("Publier un commentaire sur ${jeuVideoACommenter.nom}")
         window.setHints(listOf(Window.Hint.CENTERED))
@@ -227,6 +298,11 @@ class Menus (
         panel.addComponent(Label("Commentaire : "))
         val txtCommentaire = TextBox().addTo(panel)
 
+        panel.addComponent(Label("Note : "))
+        val noteBox = TextBox(TerminalSize(10,1))
+        noteBox.setValidationPattern(Pattern.compile("(10|[0-9])"))
+        panel.addComponent(noteBox)
+
         panel.addComponent(EmptySpace())
 
         val btnPanel = Panel(LinearLayout(Direction.HORIZONTAL))
@@ -234,13 +310,17 @@ class Menus (
         val btnValider = Button("Envoyer") {
             if (txtCommentaire.text.isBlank()){
                 MessageDialog.showMessageDialog(gui,"Erreur", "Commentaire vide")
+            }
+            else if (noteBox.text.isBlank()) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "Pas de note saisie")
             } else {
                 // Nouveau Commentaire
                 val nouveauCommentaire = Commentaire().apply {
                     commentaire = txtCommentaire.text
                     jeu = jeuVideoACommenter
                     joueur = joueurCourant
-                    date = LocalDateTime.now();
+                    note = noteBox.text.toInt()
+                    date = LocalDateTime.now()
                 }
                 try {
                     commentaireDAO.persister(nouveauCommentaire)
@@ -248,6 +328,8 @@ class Menus (
                     log.info("${joueurCourant.nom} à envoyé un commentaire sur ${jeuVideoACommenter.nom} : ${txtCommentaire.text}")
                     MessageDialog.showMessageDialog(gui,"Succès", "Commentaire publié sur ${jeuVideoACommenter.nom}")
                     window.close()
+                    jeuVideoDAO.majNoteJeu(jeuVideoACommenter)
+                    jeuVideoDAO.majPrixVenteJeu(jeuVideoACommenter)
                 } catch (e: Exception) {
                     MessageDialog.showMessageDialog(gui, "Erreur sql", e.message ?: "Erreur inconnue")
                     log.error(e.stackTrace.toString())
@@ -294,6 +376,7 @@ class Menus (
                     log.info("${joueurCourant.nom} à envoyé un incident sur ${jeuConcerne.nom} : ${txtDetails.text}")
                     MessageDialog.showMessageDialog(gui,"Succès", "Incident publié pour ${jeuConcerne.nom}")
                     window.close()
+                    jeuVideoDAO.majPrixVenteJeu(jeuConcerne)
                 } catch (e: Exception) {
                     MessageDialog.showMessageDialog(gui, "Erreur sql", e.message ?: "Erreur inconnue")
                     log.error(e.message)
@@ -363,6 +446,6 @@ class Menus (
         window.setHints(listOf(Window.Hint.CENTERED))
 
         gui.addWindowAndWait(window)
-        return joueurConnecte;
+        return joueurConnecte
     }
 }

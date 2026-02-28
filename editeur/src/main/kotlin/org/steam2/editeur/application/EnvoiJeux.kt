@@ -11,6 +11,7 @@ import org.steam2.editeur.daos.CommentaireDAO
 import org.steam2.editeur.daos.JeuVideoDAO
 import org.steam2.editeur.entites.Commentaire
 import org.steam2.editeur.entites.JeuVideo
+import org.steam2.editeur.entites.VersionJeu
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
@@ -26,7 +27,7 @@ class EnvoiJeux(private val producer: KafkaProducer<String, GenericRecord>,
 
     private val log = LoggerFactory.getLogger(EnvoiJeux::class.java)
 
-    fun envoyer(jeu: JeuVideo) {
+    fun envoyer(jeu: JeuVideo, version: VersionJeu) {
         val schemaStream = this.javaClass.classLoader.getResourceAsStream("avro/JeuVideo.avsc")
         val schema = Schema.Parser().parse(schemaStream)
 
@@ -42,6 +43,38 @@ class EnvoiJeux(private val producer: KafkaProducer<String, GenericRecord>,
             put("plateforme", GenericData.EnumSymbol(schema.getField("plateforme").schema(), jeu.plateforme.name))
 
             put("jeu_parent_id", jeu.jeuParent?.id) // null si non DLC
+
+            val versionSchema = schema.getField("version").schema()
+            val versionRecord = GenericData.Record(versionSchema).apply {
+                put("commentaire_editeur", version.commentaireEditeur)
+
+                put("generation", version.generation)
+                put("revision", version.revision)
+                put("correction", version.correction)
+
+                // Cas d'un patch
+                if(version.listeDesModifications != null && version.listeDesModifications.isNotEmpty()) {
+                    val arraySchema = versionSchema.getField("listeDesModifications").schema().types[1]
+                    val itemSchema = arraySchema.elementType
+
+                    val avroList = GenericData.Array<GenericRecord>(version.listeDesModifications.size, arraySchema)
+
+                    version.listeDesModifications.forEach { modif ->
+                        val modifRecord = GenericData.Record(itemSchema).apply {
+                            val enumSymbol = GenericData.EnumSymbol(itemSchema.getField("type_modification").schema(), modif.typeModificationPatch.name)
+                            put("type_modification", enumSymbol)
+                            put("commentaire", modif.commentaire)
+                        }
+                        avroList.add(modifRecord)
+                    }
+
+                    put("listeDesModifications", avroList)
+                }
+                else {
+                    put("listeDesModifications", null)
+                }
+            }
+            put("version", versionRecord)
 
             val nomsDesGenres = listeGenres.map { it.nom }
             put("genres", nomsDesGenres)

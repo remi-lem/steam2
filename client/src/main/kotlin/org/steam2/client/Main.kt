@@ -35,6 +35,8 @@ fun main() = runBlocking {
     val joueurDAO = JoueurDAO(emf)
     val jeuJoueurDAO = JeuJoueurDAO(emf)
     val incidentDAO = IncidentDAO(emf)
+    val genreDAO = GenreDAO(emf)
+    val sessionDAO = SessionDAO(emf)
 
     // Récupération du paramétrage Kafka
     val propsJeuxKafka = Properties()
@@ -70,11 +72,11 @@ fun main() = runBlocking {
     val serviceEnvoiIncidents = EnvoiIncidents(producerIncidents,topicIncidents)
 
     // services de récupération Kafka
-    val serviceRecupJeu = RecupJeu(consumerJeux, jeuVideoDAO)
+    val serviceRecupJeu = RecupJeu(consumerJeux, jeuVideoDAO, genreDAO)
     val serviceScopeJeu = CoroutineScope(Dispatchers.IO + SupervisorJob())
     val jobServiceJeu = serviceScopeJeu.launch(Dispatchers.IO){
         log.info("lancement du service de récupération des jeux")
-        serviceRecupJeu.recuperer()
+        serviceRecupJeu.launch()
     }
 
     // préparation de l'interface
@@ -82,7 +84,7 @@ fun main() = runBlocking {
     val screen = TerminalScreen(terminal)
     screen.startScreen()
     val gui = MultiWindowTextGUI(screen)
-    val menus = Menus(gui,joueurDAO,jeuVideoDAO, jeuJoueurDAO, commentaireDAO, incidentDAO, serviceEnvoiCommentaires, serviceEnvoiIncidents)
+    val menus = Menus(gui,joueurDAO,jeuVideoDAO, jeuJoueurDAO, commentaireDAO, incidentDAO, sessionDAO, serviceEnvoiCommentaires, serviceEnvoiIncidents)
     log.info("L'application client est prête")
 
     // lancement de l'interface
