@@ -233,6 +233,8 @@ class Menus (
                     log.error("Erreur en achetant le jeu : "+e.message)
                 }
             }
+        } else {
+            actionsBuilder.addAction("Votre solde est insuffisant.") {}
         }
 
         actionsBuilder.build().showDialog(gui)
