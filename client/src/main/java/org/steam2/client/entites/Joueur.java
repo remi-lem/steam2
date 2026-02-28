@@ -3,6 +3,8 @@ package org.steam2.client.entites;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.steam2.client.entites.type.PlateformeJeu;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -55,6 +57,9 @@ public class Joueur {
 
     @OneToMany(mappedBy = "joueur", fetch = FetchType.LAZY)
     private List<Commentaire> commentaires;
+
+    @Column(name="plateforme")
+    private PlateformeJeu plateformeJeu;
 
     //Pour création à la date du jour
     @PrePersist

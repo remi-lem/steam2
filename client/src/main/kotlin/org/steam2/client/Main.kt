@@ -19,6 +19,7 @@ import org.steam2.client.application.EnvoiCommentaires
 import org.steam2.client.application.EnvoiIncidents
 import org.steam2.client.application.Menus
 import org.steam2.client.application.RecupJeu
+import org.steam2.client.application.RecupJoueurs
 import org.steam2.client.daos.*;
 import org.steam2.client.entites.Joueur
 import java.util.Properties
@@ -48,9 +49,20 @@ fun main() = runBlocking {
     val topicJeux = propsJeuxKafka.getProperty("topic.name")
 
 
-    // Kafka
     val consumerJeux = KafkaConsumer<String, GenericRecord>(propsJeuxKafka)
     consumerJeux.subscribe(listOf(topicJeux))
+
+    // Récupération du paramétrage Kafka
+    val propsJoueursKafka = Properties()
+    val inputStreamCommonJoueurs = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka.properties")
+    val inputStreamJoueurs = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/joueurs.properties")
+    propsJoueursKafka.load(inputStreamCommonJoueurs)
+    propsJoueursKafka.load(inputStreamJoueurs)
+    val topicJoueurs = propsJeuxKafka.getProperty("topic.name")
+
+
+    val consumerJoueurs = KafkaConsumer<String, GenericRecord>(propsJeuxKafka)
+    consumerJoueurs.subscribe(listOf(topicJeux))
 
     val propsCommentairesKafka = Properties()
     val inputStreamCommonCommentaires = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka.properties")
@@ -78,6 +90,14 @@ fun main() = runBlocking {
     val jobServiceJeu = serviceScopeJeu.launch(Dispatchers.IO){
         log.info("lancement du service de récupération des jeux")
         serviceRecupJeu.launch()
+    }
+
+    // services de récupération Kafka
+    val serviceRecupJoueurs = RecupJoueurs(consumerJoueurs, joueurDAO)
+    val serviceScopeJoueurs = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    val jobServiceJoueurs = serviceScopeJoueurs.launch(Dispatchers.IO){
+        log.info("lancement du service de récupération des joueurs")
+        serviceRecupJoueurs.launch()
     }
 
     // préparation de l'interface
@@ -116,6 +136,11 @@ fun main() = runBlocking {
     log.info("Attente de la fermeture du service de récupération des jeux...")
     jobServiceJeu.join()
     serviceScopeJeu.cancel()
+
+    serviceRecupJoueurs.stop()
+    log.info("Attente de la fermeture du service de récupération des joueurs...")
+    jobServiceJoueurs.join()
+    serviceScopeJoueurs.cancel()
 
     log.info("Merci d'avoir utilisé notre application !")
 }
