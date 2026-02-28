@@ -1,0 +1,41 @@
+{
+  "type": "record",
+  "name": "Joueur",
+  "namespace": "org.steam2.plateforme.entites",
+  "fields": [
+    {
+      "name": "username",
+      "type": "string"
+    },
+    {
+      "name": "nom",
+      "type": "string"
+    },
+    {
+      "name": "prenom",
+      "type": "string"
+    },
+    {
+      "name": "date_naissance",
+      "type":{
+        "type":"long",
+        "logicalType":"timestamp-millis"
+      }
+    },
+    {
+      "name": "date_creation",
+      "type":{
+        "type":"long",
+        "logicalType":"timestamp-millis"
+      }
+    },
+    {
+      "name": "plateforme",
+      "type": {
+        "type": "enum",
+        "name": "PlateformeAvro",
+        "symbols": ["LINUX", "WINDOWS", "SWITCH"]
+      }
+    }
+  ]
+}

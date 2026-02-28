@@ -161,19 +161,50 @@ public class JeuVideoDAO {
     }
 
     /**
-     * Récupère la liste des jeux sans aucun filtre
+     * Récupère la liste des jeux sans aucun filtre (ordre chronologique d'ajout)
      * @param page numéro de la page (0 = première page)
      * @return une liste de {@value #MAX_RESULTS} jeux
      * @author Wilhem
-     *
-     * TODO : Faire en sorte que si pas d'argument {page} -> =0 de base
-     * TODO : Ici la table est "Jeu" avec majuscule mais dans le sql c'est "jeu"
      */
-    public List<JeuVideo> getJeux(Integer page){
+    public List<JeuVideo> getJeuxByID(Integer page){
         try (EntityManager em = emf.createEntityManager()) {
             return em.createQuery("SELECT j FROM JeuVideo j ", JeuVideo.class)
                     .setFirstResult(page* MAX_RESULTS)
                     .setMaxResults(MAX_RESULTS)
+                    .getResultList();
+        }
+    }
+
+    /**
+     * Récupère la liste des jeux par ordre alphabétique
+     * @param page numéro de la page (0 = première page)
+     * @return une liste de {@value #MAX_RESULTS} jeux
+     * @author Jules
+     */
+    public List<JeuVideo> getJeuxByName(Integer page){
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery("select j from JeuVideo j order by j.nom asc", JeuVideo.class)
+                    .setFirstResult(page* MAX_RESULTS)
+                    .setMaxResults(MAX_RESULTS)
+                    .getResultList();
+        }
+    }
+
+    /**
+     * Recherche de jeu dans la table par l'entrée utilisateur
+     * Renvoi une liste de jeu pouvant correspondre à la recherche
+     * @param gameName : Nom du jeu à chercher (ou partie du nom)
+     * @return une liste de {@value #MAX_RESULTS} jeux
+     * @author Jules
+     */
+    public List<JeuVideo> researchByName(String gameName){
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery(
+                     "select j from JeuVideo j"+
+                        " where j.nom like concat('%',:gName,'%')"+
+                        " order by nom asc",
+                            JeuVideo.class)
+                    .setParameter("gName", gameName)
                     .getResultList();
         }
     }

@@ -113,8 +113,8 @@ class RecupererJeuxVideos(private val consumer: KafkaConsumer<String, GenericRec
                     //VERSION DU JEU
                     log.info("Enregistrement de la version du jeu")
 
-                    var commentaire_editeur = genericJeu.get("commentaire_editeur").toString()
                     val version = genericJeu.get("version") as GenericRecord
+                    var commentaire_editeur = version.get("commentaire_editeur").toString()
                     val generation = version.get("generation") as Int
                     val revision = version.get("revision") as Int
                     val correction = version.get("correction") as Int
