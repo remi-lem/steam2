@@ -5,6 +5,7 @@ import com.googlecode.lanterna.TerminalSize
 import com.googlecode.lanterna.gui2.*
 import com.googlecode.lanterna.gui2.dialogs.ActionListDialogBuilder
 import com.googlecode.lanterna.gui2.dialogs.MessageDialog
+import org.apache.avro.LogicalTypes
 import org.slf4j.LoggerFactory
 import org.steam2.client.daos.CommentaireDAO
 import org.steam2.client.daos.IncidentDAO
@@ -19,6 +20,7 @@ import org.steam2.client.entites.JeuVideo
 import org.steam2.client.entites.Joueur
 import org.steam2.client.entites.Session
 import org.steam2.client.exceptions.LoginException
+import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.util.Properties
@@ -51,11 +53,12 @@ class Menus (
         while (!quitter){
             try {
                 ActionListDialogBuilder()
-                    .setTitle("Menu principal ${joueurCourant.nom}")
+                    .setTitle("Menu principal ${joueurCourant.username}")
                     .setDescription("Choisissez une action")
                     .setCanCancel(false)
                     .addAction("Consulter les jeux en magasin") { menuMagasin() }
                     .addAction("Consulter les jeux possédés") { menuBibliotheque() }
+                    .addAction("Recharger le solde (solde actuel : ${joueurCourant.solde})") { menuRechargerSolde() }
                     .addAction ("Quitter l'application") {
                         quitter = true
                     }
@@ -290,6 +293,44 @@ class Menus (
         window.component = panel
         gui.addWindowAndWait(window)
 
+    }
+
+    fun menuRechargerSolde(){
+        val window = BasicWindow("Recharger le solde de ${joueurCourant.nom} (solde actuel : ${joueurCourant.solde})")
+        window.setHints(listOf(Window.Hint.CENTERED))
+
+        val panel = Panel(GridLayout(2))
+
+        panel.addComponent(Label("Argent à ajouter : "))
+        val rechargementBox = TextBox(TerminalSize(10,1))
+        rechargementBox.setValidationPattern(Pattern.compile("[0-9]{1,5}([.,][0-9]{1,2})?"))
+        panel.addComponent(rechargementBox)
+
+
+        val btnPanel = Panel(LinearLayout(Direction.HORIZONTAL))
+
+        val btnValider = Button("Envoyer") {
+            if (rechargementBox.text.isBlank()) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "montant saisi")
+            } else {
+                try {
+                    joueurCourant.solde += BigDecimal(rechargementBox.text)
+                    joueurDAO.merge(joueurCourant)
+                    window.close()
+                } catch (e: Exception) {
+                    MessageDialog.showMessageDialog(gui, "Erreur sql", e.message ?: "Erreur inconnue")
+                    log.error(e.stackTrace.toString())
+                }
+            }
+        }
+
+        val btnAnnuler = Button("Annuler") {window.close()}
+        btnPanel.addComponent(btnValider)
+        btnPanel.addComponent(btnAnnuler)
+        panel.addComponent(btnPanel)
+
+        window.component = panel
+        gui.addWindowAndWait(window)
     }
 
     fun menuPublierCommentaire(jeuVideoACommenter: JeuVideo){
