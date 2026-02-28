@@ -49,7 +49,7 @@ public class JeuVideo {
     @Column(name="note")
     private BigDecimal note;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "jeu_genre",
             joinColumns = { @JoinColumn(name = "jeu_id") },
