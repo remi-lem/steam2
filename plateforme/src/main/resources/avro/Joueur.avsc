@@ -36,6 +36,10 @@
         "name": "PlateformeAvro",
         "symbols": ["LINUX", "WINDOWS", "SWITCH"]
       }
-    }
+    },
+	{
+		"name":"password",
+		"type":"string"
+	}
   ]
 }

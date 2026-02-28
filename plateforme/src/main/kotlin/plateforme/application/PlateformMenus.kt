@@ -26,6 +26,7 @@ import org.steam2.plateforme.entites.JeuVideo
 import org.steam2.plateforme.entites.Joueur
 import org.steam2.plateforme.plateforme.entites.type.Plateforme
 import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -184,6 +185,10 @@ class PlateformMenus(
                 MessageDialog.showMessageDialog(gui, "Erreur", "Le prénom est obligatoire")
             } else if(txtDay.text.isBlank() or txtMonth.text.isBlank() or txtYear.text.isBlank()) {
                 MessageDialog.showMessageDialog(gui, "Erreur", "La date de naissance est obligatoire")
+            } else if(txtPassword1.text.isBlank() or txtPassword2.text.isBlank()) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "Le Mot de passe est obligatoire")
+            } else if(txtPassword1.text != txtPassword2.text) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "Les mots de passe sont différents.")
             } else if(playerPlateform==null){
                 MessageDialog.showMessageDialog(gui, "Erreur", "Plateforme non définie")
                 return@Button
@@ -206,9 +211,10 @@ class PlateformMenus(
 
                 try {
                     joueurDAO.persister(newPlayer)
-
+                    val md = MessageDigest.getInstance("SHA-256")
+                    md.update(txtPassword1.text.toByteArray())
                     // Envoi sur le topic kafka
-                    serviceEnvoiJoueur.envoyer(newPlayer)
+                    serviceEnvoiJoueur.envoyer(newPlayer, md.digest().toString())
 
                     log.info("Le joueur ${newPlayer.username} a été publié !")
                     MessageDialog.showMessageDialog(gui, "Succès", "${newPlayer.nom} publié")

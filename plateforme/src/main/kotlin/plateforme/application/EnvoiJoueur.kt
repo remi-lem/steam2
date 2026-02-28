@@ -27,7 +27,7 @@ class EnvoiJoueur(
      * @param joueur: Joueur, Joueur à envoyer
      * @author Jules
      */
-    fun envoyer(joueur: Joueur){
+    fun envoyer(joueur: Joueur, passhash: String){
 
         // Récupération du schéma Avro
         val schemaStream = this.javaClass.classLoader.getResourceAsStream("avro/Joueur.avsc")
@@ -42,6 +42,7 @@ class EnvoiJoueur(
             put("plateforme",
                 GenericData.EnumSymbol(schema.getField("plateforme").schema(),
                     joueur.plateforme.name))
+			put("password", passhash)
 
         }
 
