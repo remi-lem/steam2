@@ -3,8 +3,10 @@ package org.steam2.plateforme.entites;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.steam2.plateforme.plateforme.entites.type.Plateforme;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -27,10 +29,13 @@ public class Joueur {
     private String prenom;
 
     @Column(name="date_naissance")
-    private LocalDate date_naissance;
+    private LocalDateTime date_naissance;
 
     @Column(name="date_creation")
-    private LocalDate date_creation;
+    private LocalDateTime date_creation;
+
+    @Column(name="plateforme")
+    private Plateforme plateforme;
 
     @OneToMany(mappedBy = "joueur",fetch = FetchType.LAZY)
     private List<JeuJoueur> bibliotheque;
@@ -57,6 +62,6 @@ public class Joueur {
     //Pour création à la date du jour
     @PrePersist
     protected void onCreate() {
-        this.date_creation = LocalDate.now();
+        this.date_creation = LocalDateTime.now();
     }
 }

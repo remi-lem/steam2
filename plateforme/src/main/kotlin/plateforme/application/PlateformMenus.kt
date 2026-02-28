@@ -3,10 +3,12 @@ package org.steam2.plateforme.plateforme.application
 import com.google.common.hash.Hashing
 import com.googlecode.lanterna.gui2.BasicWindow
 import com.googlecode.lanterna.gui2.Button
+import com.googlecode.lanterna.gui2.ComboBox
+import com.googlecode.lanterna.gui2.Direction
 import com.googlecode.lanterna.gui2.EmptySpace
 import com.googlecode.lanterna.gui2.GridLayout
 import com.googlecode.lanterna.gui2.Label
-import com.googlecode.lanterna.gui2.LayoutManager
+import com.googlecode.lanterna.gui2.LinearLayout
 import com.googlecode.lanterna.gui2.MultiWindowTextGUI
 import com.googlecode.lanterna.gui2.Panel
 import com.googlecode.lanterna.gui2.TextBox
@@ -18,10 +20,18 @@ import org.steam2.plateforme.daos.CommentaireDAO
 import org.steam2.plateforme.daos.EditeurDAO
 import org.steam2.plateforme.daos.GenreDAO
 import org.steam2.plateforme.daos.JeuVideoDAO
+import org.steam2.plateforme.daos.JoueurDAO
 import org.steam2.plateforme.entites.Genre
 import org.steam2.plateforme.entites.JeuVideo
 import org.steam2.plateforme.entites.Joueur
+import org.steam2.plateforme.plateforme.entites.type.Plateforme
 import java.nio.charset.StandardCharsets
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 import javax.security.auth.login.LoginException
 
 /**
@@ -32,14 +42,16 @@ class PlateformMenus(
         private val gui: MultiWindowTextGUI,
         private val editeurDAO: EditeurDAO,
         private val jeuVideoDAO: JeuVideoDAO,
+        private val joueurDAO: JoueurDAO,
         private val genreDAO: GenreDAO,
         private val commentaireDAO: CommentaireDAO,
         private val serviceScopeJeux: CoroutineScope,
-        private val serviceRecuperationJeux: RecupererJeuxVideos
+        private val serviceRecuperationJeux: RecupererJeuxVideos,
+        private val serviceEnvoiJoueur: EnvoiJoueur
     ) {
 
     private val log = LoggerFactory.getLogger(PlateformMenus::class.java)
-    private var isAccountConnected: Boolean = false
+    private var accountConnected: Joueur? = null
 
 
     /**
@@ -69,7 +81,7 @@ class PlateformMenus(
                     }
 
                 // Si un compte est connecté
-                if(isAccountConnected) {
+                if(accountConnected!=null) {
                     menu.addAction("Ma collection") {
                         log.info("Ma collection")
                         // TODO : Affichage de la collection reliée au compte
@@ -128,6 +140,7 @@ class PlateformMenus(
                     }
                     .addAction("Inscription") {
                         log.info("Inscription")
+                        register()
 
                     }.addAction("Fermer le menu") {
                         exitLogMenu = true
@@ -141,11 +154,124 @@ class PlateformMenus(
         }
     }
 
+    fun register() {
+        val window = BasicWindow("Création de compte")
+        val panel = Panel(GridLayout(2))
+        val txtUsername = TextBox()
+        val txtName = TextBox()
+        val txtFirstname = TextBox()
+
+        // Date de naissance
+        val txtDay = TextBox("JJ")
+        val txtMonth = TextBox("MM")
+        val txtYear = TextBox("AAAA")
+
+        val txtPassword1 = TextBox().setMask('*')
+        val txtPassword2 = TextBox().setMask('*')
+
+        var cbPlateforme: ComboBox<Plateforme>? = null
+
+        val btnPanel = Panel(LinearLayout(Direction.HORIZONTAL))
+        val btnValider = Button("Enregistrer") {
+
+            val playerPlateform = cbPlateforme?.selectedItem
+
+            if (txtUsername.text.isBlank()) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "Le pseudo est obligatoire")
+            } else if(txtName.text.isBlank()) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "Le nom est obligatoire")
+            } else if(txtFirstname.text.isBlank()) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "Le prénom est obligatoire")
+            } else if(txtDay.text.isBlank() or txtMonth.text.isBlank() or txtYear.text.isBlank()) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "La date de naissance est obligatoire")
+            } else if(playerPlateform==null){
+                MessageDialog.showMessageDialog(gui, "Erreur", "Plateforme non définie")
+                return@Button
+            }else{
+                // ——— Conversion de la date de naissance récupérée ———
+                // Récupération des valeurs saisies
+                val day = txtDay.text.trim().toInt()
+                val month = txtMonth.text.trim().toInt()
+                val year = txtYear.text.trim().toInt()
+
+                // --- Création du nouveau joueur ---
+                val newPlayer = Joueur().apply {
+                    username = txtUsername.text
+                    prenom = txtFirstname.text
+                    nom = txtName.text
+                    date_naissance = LocalDateTime.of(year, month, day, 12,0)
+                    date_creation = LocalDateTime.now()
+                    plateforme = playerPlateform
+                }
+
+                try {
+                    joueurDAO.persister(newPlayer)
+
+                    // Envoi sur le topic kafka
+                    serviceEnvoiJoueur.envoyer(newPlayer)
+
+                    log.info("Le joueur ${newPlayer.username} a été publié !")
+                    MessageDialog.showMessageDialog(gui, "Succès", "${newPlayer.nom} publié")
+                    window.close()
+                } catch (e: Exception) {
+                    log.error("Error in main plateform menus", e)
+                }
+            }
+        }
+
+        val btnAnnuler = Button("Annuler") { window.close() }
+
+
+        // Composants de la fenetre
+        panel.addComponent(Label("Pseudo :"))
+        panel.addComponent(txtUsername)
+
+        panel.addComponent(Label("Prénom :"))
+        panel.addComponent(txtFirstname)
+
+        panel.addComponent(Label("Nom :"))
+        panel.addComponent(txtName)
+
+        panel.addComponent(EmptySpace())
+        panel.addComponent(EmptySpace())
+
+        panel.addComponent(Label("Date de naissance (JJ/MM/AAAA) :"))
+        panel.addComponent(Panel(LinearLayout(Direction.HORIZONTAL)).apply {
+            addComponent(txtDay)
+            addComponent(Label("/"))
+            addComponent(txtMonth)
+            addComponent(Label("/"))
+            addComponent(txtYear)
+        })
+
+        panel.addComponent(EmptySpace())
+        panel.addComponent(EmptySpace())
+
+        panel.addComponent(Label("Plateforme de jeu principale :"))
+        cbPlateforme = ComboBox<Plateforme>(*Plateforme.entries.toTypedArray()).addTo(panel)
+
+        panel.addComponent(EmptySpace())
+        panel.addComponent(EmptySpace())
+
+        panel.addComponent(Label("Mot de passe:"))
+        panel.addComponent(txtPassword1)
+
+        panel.addComponent(Label("Vérifier le mot de passe:"))
+        panel.addComponent(txtPassword2)
+
+        btnPanel.addComponent(btnValider)
+        btnPanel.addComponent(btnAnnuler)
+        panel.addComponent(btnPanel)
+
+        window.component = panel
+        gui.addWindowAndWait(window)
+    }
+
     fun login(): Joueur? {
         var accountConnected:Joueur? = null
 
         val window = BasicWindow("Authentification")
-        val panel = Panel().apply{ layoutManager= GridLayout(2) }
+        val panel = Panel(GridLayout(2))
 
         val txtLogin = TextBox()
         val txtPassword = TextBox().setMask('*')
@@ -239,6 +365,8 @@ class PlateformMenus(
                     .addAction("Voir mes amis") {
                         // TODO : Afficher la liste d'amis
                         log.info("Voir mes amis")
+                        displayFriendList()
+
                     }
                     .addAction("Ajouter un ami") {
                         // TODO : Resultat de la recherche
@@ -390,7 +518,7 @@ class PlateformMenus(
         val panel = Panel().apply { layoutManager = GridLayout(2) }
         val txtNameGame = TextBox()
         val btnOK = Button("OK"){
-            // TODO : Ajouter des effets
+            // TODO : Requête à faire dans la base Client
             window.close()
         }
 
@@ -569,10 +697,10 @@ class PlateformMenus(
 
         }
         // Séparateur visuel
-        panel.addComponent(Label(""))
-        panel.addComponent(Label(""))
+        panel.addComponent(EmptySpace())
+        panel.addComponent(EmptySpace())
 
-        if(isAccountConnected){
+        if(accountConnected!=null){
             // Bouton avec actions
             val btnBuy = Button("Acheter le jeu"){
                 log.info("Acheter le jeu")
@@ -594,6 +722,110 @@ class PlateformMenus(
             window.close()
         }
 
+        panel.addComponent(btnClose)
+
+        window.component = panel
+        gui.addWindowAndWait(window)
+    }
+
+    /**
+     * Affichage des amis du compte Joueur chargé (accountConnected)
+     * Permet d'acceder à la fiche de chaque ami pour voir son profil ou le supprimer
+     *
+     * @return None
+     *
+     * @author Jules
+     */
+    fun displayFriendList(){
+        var exitFriendList = false
+
+        while(!exitFriendList) {
+            try {
+                // Liste des options possibles
+                val builder = ActionListDialogBuilder()
+                    .setTitle(" - Liste d'amis -")
+                    .setDescription("Choisissez une action :")
+                    .setCanCancel(false)
+
+                for (friend in accountConnected!!.amis){
+                    builder.addAction(friend.username) {
+                        friendPage(friend)
+                        log.info(friend.username)
+
+                    }
+                }
+                builder.addAction("Fermer le menu") {
+                    exitFriendList = true
+                }
+                    .build()
+                    .showDialog(gui)
+            } catch (e: Exception) {
+                log.error("Error in main plateform menus", e)
+                MessageDialog.showMessageDialog(gui, "Erreur fatale", e.message)
+            }
+        }
+    }
+
+    fun displayDeleteFriendFromList(){
+        var exitFriendList = false
+
+        while(!exitFriendList) {
+            try {
+                val builder = ActionListDialogBuilder()
+                    .setTitle(" - Liste d'amis -")
+                    .setCanCancel(false)
+
+                for (friend in accountConnected!!.amis){
+                    builder.addAction(friend.username) {
+                        accountConnected!!.amis.remove(friend)
+                        // TODO : Supprimer l'ami dans la BDD
+                    }
+                }
+                builder.addAction("Fermer le menu") {
+                    exitFriendList = true
+                }
+                    .build()
+                    .showDialog(gui)
+            } catch (e: Exception) {
+                log.error("Error in main plateform menus", e)
+                MessageDialog.showMessageDialog(gui, "Erreur fatale", e.message)
+            }
+        }
+    }
+
+    /**
+     * Affiche la page correspondante à un ami
+     * - Affichage de ses caractéristiques
+     * - Possibilité de suppression de l'amitié
+     *
+     * @author Jules
+     */
+    fun friendPage(friend:Joueur){
+
+        val panel = Panel().apply { layoutManager = GridLayout(2) }
+        val window = BasicWindow(friend.username)
+
+        val btnDeleteFriend = Button("Supprimer l'ami"){
+            accountConnected?.amis?.remove(friend)
+            // TODO : Supprimer l'ami dans la BDD
+
+            window.close()
+        }
+
+        val btnClose = Button("Retour"){
+            window.close()
+        }
+
+        // Affichage des informations
+        panel.addComponent(Label("Date de création de compte : "))
+        panel.addComponent(Label(friend.date_creation.toString()))
+
+        // Séparateur visuel
+        panel.addComponent(EmptySpace())
+        panel.addComponent(EmptySpace())
+
+        // Ajout des boutons
+        panel.addComponent(btnDeleteFriend)
         panel.addComponent(btnClose)
 
         window.component = panel

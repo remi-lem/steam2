@@ -22,6 +22,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import org.steam2.plateforme.daos.IncidentDAO
 import org.steam2.plateforme.daos.JoueurDAO
+import org.steam2.plateforme.plateforme.application.EnvoiJoueur
 import org.steam2.plateforme.plateforme.application.RecupererJeuxVideos
 import org.steam2.plateforme.plateforme.application.PlateformMenus
 import org.steam2.plateforme.plateforme.application.TransfererCommentaire
@@ -59,9 +60,11 @@ fun main() = runBlocking {
     val propsJoueur = Properties()
     val inputStreamCommonJoueurs = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/common.properties")
     val inputStreamJoueurs = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/joueur.properties")
-    propsJeux.load(inputStreamCommonJeux)
-    propsJeux.load(inputStreamJeux)
-    val topicJoueur = propsJeux.getProperty("topic.name")
+    propsJoueur.load(inputStreamCommonJoueurs)
+    propsJoueur.load(inputStreamJoueurs)
+    val topicJoueur = propsJoueur.getProperty("topic.name")
+
+
     // ———————————————————————————————
 
     val propsIncidents = Properties()
@@ -103,9 +106,10 @@ fun main() = runBlocking {
 
     // ——— Producer ———
     val producerJoueur = KafkaProducer<String, GenericRecord>(propsJoueur)
-    val serviceEnvoiJoueur = EnvoiJoueur(producerJoueur, topicJoueur, jeuVideoDAO)
+    val serviceEnvoiJoueur = EnvoiJoueur(producerJoueur, topicJoueur)
 
-
+    // TODO : Reparer
+    /*
     val consumerIncidents = KafkaConsumer<String, GenericRecord>(propsIncidents)
     consumerIncidents.subscribe(listOf(topicIncidents))
     val producerIncidents = KafkaProducer<String, GenericRecord>(propsIncidents)
@@ -113,6 +117,7 @@ fun main() = runBlocking {
     consumerIncidents.subscribe(listOf(topicRecevoirIncidents))
     val producerIncidents = KafkaProducer<String, GenericRecord>(propsEnvoyerIncidents)
 
+    */
     val consumerCommentaires = KafkaConsumer<String, GenericRecord>(propsRecevoirCommentaires)
     consumerCommentaires.subscribe(listOf(topicRecevoirCommentaires))
     val producerCommentaires = KafkaProducer<String, GenericRecord>(propsEnvoyerCommentaires)
@@ -132,12 +137,17 @@ fun main() = runBlocking {
     }
 
     //Incidents
+
+    // TODO : Reparer
+    /*
     val serviceScopeIncidents = CoroutineScope(Dispatchers.IO + SupervisorJob())
     val serviceTransfereIncidents = TransfererIncidents(consumerIncidents, producerIncidents, topicEnvoyerIncidents, incidentDAO, jeuVideoDAO)
 
     val jobServiceIncidents = serviceScopeIncidents.launch(Dispatchers.IO) {
         serviceTransfereIncidents.launch()
     }
+    */
+
 
     //Commentaires
     val serviceScopeCommentaires = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -156,7 +166,8 @@ fun main() = runBlocking {
 
     // Préparation du menu principal
     val gui = MultiWindowTextGUI(screen)
-    val menus = PlateformMenus(gui, editeurDAO, jeuVideoDAO, genreDAO, commentaireDAO, serviceScopeJeux, serviceRecuperationJeux)
+    val menus = PlateformMenus(gui, editeurDAO, jeuVideoDAO, joueurDAO,genreDAO, commentaireDAO, serviceScopeJeux,
+        serviceRecuperationJeux, serviceEnvoiJoueur)
 
     log.info("Menu principal préparée")
 
@@ -173,8 +184,11 @@ fun main() = runBlocking {
     emf.close()
     AbandonedConnectionCleanupThread.checkedShutdown()
     //kafka
-    producerIncidents.flush()
-    producerIncidents.close()
+
+    // TODO : Reparer
+    //producerIncidents.flush()
+    //producerIncidents.close()
+
     producerCommentaires.flush()
     producerCommentaires.close()
 
@@ -184,7 +198,10 @@ fun main() = runBlocking {
     //services
     serviceRecuperationJeux.stop()
     serviceRecuperationJeux.stop()
-    serviceTransfereIncidents.stop()
+
+    //TODO : Reparer
+    //serviceTransfereIncidents.stop()
+
     serviceTransfereCommentaires.stop()
 
     log.info("Attente de la fermeture des services de récupération des jeux... " +
@@ -194,8 +211,10 @@ fun main() = runBlocking {
 
     log.info("Attente de la fermeture des services de récupération des jeux... " +
             "(${TransfererIncidents.DELAI_ATTENTE * 2 / 1000} secondes max)")
-    jobServiceIncidents.join()
-    serviceScopeIncidents.cancel()
+
+    // TODO : Reparer
+    // jobServiceIncidents.join()
+    // serviceScopeIncidents.cancel()
 
     log.info("Attente de la fermeture des services de récupération des jeux... " +
             "(${TransfererCommentaire.DELAI_ATTENTE * 2 / 1000} secondes max)")

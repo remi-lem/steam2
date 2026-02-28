@@ -4,15 +4,7 @@
   "namespace": "org.steam2.plateforme.entites",
   "fields": [
     {
-      "name": "id",
-      "type": "int"
-    },
-    {
       "name": "username",
-      "type": "string"
-    },
-    {
-      "name": "plateforme",
       "type": "string"
     },
     {
@@ -25,11 +17,25 @@
     },
     {
       "name": "date_naissance",
-      "type": "datetime"
+      "type":{
+        "type":"long",
+        "logicalType":"timestamp-millis"
+      }
     },
     {
       "name": "date_creation",
-      "type": "datetime"
+      "type":{
+        "type":"long",
+        "logicalType":"timestamp-millis"
+      }
+    },
+    {
+      "name": "plateforme",
+      "type": {
+        "type": "enum",
+        "name": "PlateformeAvro",
+        "symbols": ["LINUX", "WINDOWS", "SWITCH"]
+      }
     }
   ]
 }

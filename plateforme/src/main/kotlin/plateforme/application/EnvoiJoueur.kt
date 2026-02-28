@@ -7,8 +7,9 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import org.steam2.plateforme.daos.JeuVideoDAO
+import org.steam2.plateforme.daos.JoueurDAO
 import org.steam2.plateforme.entites.Joueur
-
+import java.sql.Timestamp
 /**
  * Service d'envoi de joueur sur le topic kafka, lors de l'inscription d'un joueur
  *
@@ -16,8 +17,7 @@ import org.steam2.plateforme.entites.Joueur
  */
 class EnvoiJoueur(
     private val producer: KafkaProducer<String, GenericRecord>,
-    private val topic: String,
-    private val jeuVideoDAO: JeuVideoDAO) {
+    private val topic: String) {
 
     private val log = LoggerFactory.getLogger(EnvoiJoueur::class.java)
 
@@ -34,6 +34,15 @@ class EnvoiJoueur(
         val schema = Schema.Parser().parse(schemaStream)
 
         val record = GenericData.Record(schema).apply {
+            put("username", joueur.username)
+            put("nom", joueur.nom)
+            put("prenom",joueur.prenom)
+            put("date_naissance", Timestamp.valueOf(joueur.date_naissance).time)
+            put("date_creation",Timestamp.valueOf(joueur.date_creation).time)
+            put("plateforme",
+                GenericData.EnumSymbol(schema.getField("plateforme").schema(),
+                    joueur.plateforme.name))
+
         }
 
         // Envoi du joueur sur le topic
