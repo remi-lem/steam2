@@ -191,6 +191,21 @@ public class JeuVideoDAO {
     }
 
     /**
+     * Récupère la liste des jeux par ordre de note décroissante
+     * @param page numéro de la page (0 = première page)
+     * @return une liste de {@value #MAX_RESULTS} jeux
+     * @author Jules
+     */
+    public List<JeuVideo> getJeuxByNote(Integer page){
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery("select j from JeuVideo j order by j.note desc", JeuVideo.class)
+                    .setFirstResult(page* MAX_RESULTS)
+                    .setMaxResults(MAX_RESULTS)
+                    .getResultList();
+        }
+    }
+
+    /**
      * Recherche de jeu dans la table par l'entrée utilisateur
      * Renvoi une liste de jeu pouvant correspondre à la recherche
      * @param gameName : Nom du jeu à chercher (ou partie du nom)

@@ -106,55 +106,46 @@ fun main() = runBlocking {
     val consumerJeux = KafkaConsumer<String, GenericRecord>(propsJeux)
     consumerJeux.subscribe(listOf(topicJeux))
 
+    val consumerIncidents = KafkaConsumer<String, GenericRecord>(propsRecevoirIncidents)
+    consumerIncidents.subscribe(listOf(topicRecevoirIncidents))
+
+    val consumerCommentaires = KafkaConsumer<String, GenericRecord>(propsRecevoirCommentaires)
+    consumerCommentaires.subscribe(listOf(topicRecevoirCommentaires))
+
     // ——— Producer ———
     val producerJoueur = KafkaProducer<String, GenericRecord>(propsJoueur)
     val serviceEnvoiJoueur = EnvoiJoueur(producerJoueur, topicJoueur)
 
-    // TODO : Reparer
-    /*
-    val consumerIncidents = KafkaConsumer<String, GenericRecord>(propsIncidents)
-    consumerIncidents.subscribe(listOf(topicIncidents))
-    val producerIncidents = KafkaProducer<String, GenericRecord>(propsIncidents)
-    val consumerIncidents = KafkaConsumer<String, GenericRecord>(propsRecevoirIncidents)
-    consumerIncidents.subscribe(listOf(topicRecevoirIncidents))
     val producerIncidents = KafkaProducer<String, GenericRecord>(propsEnvoyerIncidents)
 
-    */
-    val consumerCommentaires = KafkaConsumer<String, GenericRecord>(propsRecevoirCommentaires)
-    consumerCommentaires.subscribe(listOf(topicRecevoirCommentaires))
     val producerCommentaires = KafkaProducer<String, GenericRecord>(propsEnvoyerCommentaires)
-
 
     log.info("L'application Plateforme est prête")
 
-    //récupérer les infos en arrière plan avec Co Routines Kotlin
+    // Récupérer les infos en arrière plan avec Co Routines Kotlin
 
     // Utilisation de Coroutine et de Kafka
     val serviceScopeJeux = CoroutineScope(Dispatchers.IO + SupervisorJob())
     val serviceRecuperationJeux = RecupererJeuxVideos(consumerJeux, jeuVideoDAO, editeurDAO, genreDAO, versionJeuDAO)
 
-    // Lancement du service
+    val serviceScopeIncidents = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    val serviceTransfereIncidents = TransfererIncidents(consumerIncidents, producerIncidents, topicEnvoyerIncidents, incidentDAO, jeuVideoDAO)
+
+    val serviceScopeCommentaires = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    val serviceTransfereCommentaires = TransfererCommentaire(consumerCommentaires, producerCommentaires, topicEnvoyerCommentaire, commentaireDAO, jeuVideoDAO,joueurDAO)
+
+    // --- Lancement des service ---
+    // Jeux
     val jobServiceJeux = serviceScopeJeux.launch(Dispatchers.IO) {
         serviceRecuperationJeux.launch()
     }
 
-    //Incidents
-
-    // TODO : Reparer
-    /*
-    val serviceScopeIncidents = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    val serviceTransfereIncidents = TransfererIncidents(consumerIncidents, producerIncidents, topicEnvoyerIncidents, incidentDAO, jeuVideoDAO)
-
+    // Incidents
     val jobServiceIncidents = serviceScopeIncidents.launch(Dispatchers.IO) {
         serviceTransfereIncidents.launch()
     }
-    */
-
 
     //Commentaires
-    val serviceScopeCommentaires = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    val serviceTransfereCommentaires = TransfererCommentaire(consumerCommentaires, producerCommentaires, topicEnvoyerCommentaire, commentaireDAO, jeuVideoDAO,joueurDAO)
-
     val jobServiceCommentaires = serviceScopeCommentaires.launch(Dispatchers.IO) {
         serviceTransfereCommentaires.launch()
     }
@@ -177,7 +168,7 @@ fun main() = runBlocking {
     // Lancement de l'interface
     val plateforme = menus.mainMenu()
 
-    log.info("Interface lancéd")
+    log.info("Interface lancé")
 
     //Fin de programme
     log.info("Fermeture de l'application Plateforme")
@@ -185,25 +176,21 @@ fun main() = runBlocking {
     //hibernate
     emf.close()
     AbandonedConnectionCleanupThread.checkedShutdown()
-    //kafka
 
-    // TODO : Reparer
-    //producerIncidents.flush()
-    //producerIncidents.close()
+    //kafka
+    producerIncidents.flush()
+    producerIncidents.close()
 
     producerCommentaires.flush()
     producerCommentaires.close()
 
-    //fenetre
+    // fenêtre
     screen.close()
 
-    //services
+    // Arrêt des Services
     serviceRecuperationJeux.stop()
     serviceRecuperationJeux.stop()
-
-    //TODO : Reparer
-    //serviceTransfereIncidents.stop()
-
+    serviceTransfereIncidents.stop()
     serviceTransfereCommentaires.stop()
 
     log.info("Attente de la fermeture des services de récupération des jeux... " +
@@ -214,9 +201,8 @@ fun main() = runBlocking {
     log.info("Attente de la fermeture des services de transfert des incidents... " +
             "(${TransfererIncidents.DELAI_ATTENTE * 2 / 1000} secondes max)")
 
-    // TODO : Reparer
-    // jobServiceIncidents.join()
-    // serviceScopeIncidents.cancel()
+    jobServiceIncidents.join()
+    serviceScopeIncidents.cancel()
 
     log.info("Attente de la fermeture des services de transfert des commentaires... " +
             "(${TransfererCommentaire.DELAI_ATTENTE * 2 / 1000} secondes max)")

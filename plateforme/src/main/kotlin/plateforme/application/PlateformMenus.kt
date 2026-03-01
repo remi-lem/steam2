@@ -70,13 +70,11 @@ class PlateformMenus(
                     .setDescription("Choisissez une action :")
                     .setCanCancel(false)
                     .addAction("Liste des jeux disponibles") {
-                        // menuPublicationJeu(false)
-                        // TODO : Affichage de la liste des jeux -> La récupérer
-                        log.info("Liste des jeux")
+                        // log.info("Liste des jeux")
                         menuVGList()
                     }
                     .addAction("Rechercher un jeu") {
-                        log.info("Recherche de jeux")
+                        // log.info("Recherche de jeux")
                         searchGame()
                         // TODO : résultat de la requête
                     }
@@ -84,25 +82,25 @@ class PlateformMenus(
                 // Si un compte est connecté
                 if(accountConnected!=null) {
                     menu.addAction("Ma collection") {
-                        log.info("Ma collection")
+                        // log.info("Ma collection")
                         // TODO : Affichage de la collection reliée au compte
 
                     }.addAction("Ma liste de souhaits") {
-                        log.info("Acces liste de souhaits")
+                        // log.info("Acces liste de souhaits")
                         menuWishlist()
                         // TODO : Affichage de la liste de souhait
 
                     }.addAction("Mes amis") {
-                        log.info("Liste d'amis")
+                        // log.info("Liste d'amis")
                         menuFriends()
 
                     }.addAction("Gérer mon compte") {
-                        log.info("Gerer mon compte")
+                        // log.info("Gerer mon compte")
                         menuManageAccount()
                     }
                 }else{
                     menu.addAction("Connexion / Inscription") {
-                        log.info("connexion ou inscription")
+                        // log.info("connexion ou inscription")
                         menuLogRegAccount()
                     }
                 }
@@ -135,12 +133,12 @@ class PlateformMenus(
                     .setDescription("Choisissez une action :")
                     .setCanCancel(false)
                     .addAction("Connexion") {
-                        log.info("Connexion")
+                        // log.info("Connexion")
                         login()
 
                     }
                     .addAction("Inscription") {
-                        log.info("Inscription")
+                        // log.info("Inscription")
                         register()
 
                     }.addAction("Fermer le menu") {
@@ -183,9 +181,17 @@ class PlateformMenus(
                 MessageDialog.showMessageDialog(gui, "Erreur", "Le nom est obligatoire")
             } else if(txtFirstname.text.isBlank()) {
                 MessageDialog.showMessageDialog(gui, "Erreur", "Le prénom est obligatoire")
-            } else if(txtDay.text.isBlank() or txtMonth.text.isBlank() or txtYear.text.isBlank()) {
+            }
+            else if(txtDay.text.isBlank() or txtMonth.text.isBlank() or txtYear.text.isBlank()) {
                 MessageDialog.showMessageDialog(gui, "Erreur", "La date de naissance est obligatoire")
-            } else if(txtPassword1.text.isBlank() or txtPassword2.text.isBlank()) {
+            }
+            else if(txtDay.text.toInt() !in 1..31) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "Le jour de naissance doit être <=31 et c'est elle")
+            }
+            else if(txtMonth.text.toInt() !in 1..12) {
+                MessageDialog.showMessageDialog(gui, "Erreur", "Le mois de naissance doit <=12")
+            }
+            else if(txtPassword1.text.isBlank() or txtPassword2.text.isBlank()) {
                 MessageDialog.showMessageDialog(gui, "Erreur", "Le Mot de passe est obligatoire")
             } else if(txtPassword1.text != txtPassword2.text) {
                 MessageDialog.showMessageDialog(gui, "Erreur", "Les mots de passe sont différents.")
@@ -216,7 +222,7 @@ class PlateformMenus(
                     // Envoi sur le topic kafka
                     serviceEnvoiJoueur.envoyer(newPlayer, md.digest().toString())
 
-                    log.info("Le joueur ${newPlayer.username} a été publié !")
+                    // log.info("Le joueur ${newPlayer.username} a été publié !")
                     MessageDialog.showMessageDialog(gui, "Succès", "${newPlayer.nom} publié")
                     window.close()
                 } catch (e: Exception) {
@@ -328,8 +334,7 @@ class PlateformMenus(
                     .setDescription("Choisissez une action :")
                     .setCanCancel(false)
                     .addAction("Afficher par date d'ajout") {
-                        // TODO : Résupérer la liste des jeux par ordre anti-chronologique
-                        log.info("Affichage date d'ajout")
+                        // log.info("Affichage date d'ajout")
 
                         // Etape 1 : Afficher la liste des jeux dans la console
                         log.info(jeuVideoDAO.getJeuxByID(0).toString())
@@ -338,14 +343,14 @@ class PlateformMenus(
                         displayGameList(jeuVideoDAO.getJeuxByID(0))
                     }
                     .addAction("Afficher par ordre alphabétique") {
-                        log.info("Affichage ordre alpha")
+                        // log.info("Affichage ordre alpha")
                         // Affichage des jeux
                         displayGameList(jeuVideoDAO.getJeuxByName(0))
                     }
                     .addAction("Afficher par popularité") {
-                        // TODO : Récupérer la liste des jeux par rapport à leur popularité
-                        // TODO : Mettre en place un système de vote / ranking
-                        log.info("Affichage par avis")
+                        // log.info("Affichage par avis")
+                        displayGameList(jeuVideoDAO.getJeuxByNote(0))
+
                     }.addAction("Fermer le menu") {
                         exitVGListe = true
                     }
@@ -369,15 +374,13 @@ class PlateformMenus(
                     .setDescription("Choisissez une action :")
                     .setCanCancel(false)
                     .addAction("Voir mes amis") {
-                        // TODO : Afficher la liste d'amis
-                        log.info("Voir mes amis")
+                        // log.info("Voir mes amis")
                         displayFriendList()
 
                     }
                     .addAction("Ajouter un ami") {
-                        // TODO : Resultat de la recherche
                         searchFriend()
-                        log.info("Ajouter un ami")
+                        // log.info("Ajouter un ami")
                     }
                     .addAction("Supprimer un ami") {
                         // TODO : Afficher la liste d'ami, pouvoir en sélectionner un puis suppression
@@ -415,7 +418,7 @@ class PlateformMenus(
                     .setDescription("Choisissez une action :")
                     .setCanCancel(false)
                     .addAction("Voir ma liste de souhaits") {
-                        // TODO : Afficher la liste d'amis
+                        // TODO : Afficher la liste de souhait
                         log.info("Voir mes amis")
                     }
                     .addAction("Supprimer un jeu de la liste de souhaits") {
@@ -439,9 +442,6 @@ class PlateformMenus(
      * - Changer d'adresse mail
      * - Changer de mot de passe
      *
-     * TODO : Pas de DAO Joueur ? On ne peut pas faire de requête ?
-     * TODO : Pas d'élément adresse mail ? On s'en fiche de sa date de naissance
-     *
      * @author : Jules
      */
     fun menuManageAccount(){
@@ -455,15 +455,15 @@ class PlateformMenus(
                     .setDescription("Choisissez une action :")
                     .setCanCancel(false)
                     .addAction("Changer de pseudo") {
-                        log.info("Changement de pseudo")
+                        // log.info("Changement de pseudo")
                         changeItem("pseudo")
                     }
                     .addAction("Changer d'adresse mail") {
-                        log.info("Changement d'adresse mail")
+                        // log.info("Changement d'adresse mail")
                         changeItem("email")
 
                     }.addAction("Changer de mot de passe") {
-                        log.info("Changement MDP")
+                        // log.info("Changement MDP")
                         changeItem("password")
                     }.addAction("Fermer le menu") {
                         exitManageAccount = true
@@ -482,8 +482,6 @@ class PlateformMenus(
      * Fonction permettant de chercher un jeu
      *
      * Création d'une fênetre permettant la saisie d'un nom de jeu
-     * TODO : Faire la recherche
-     * TODO : Faire une requête dans DAO pour trier par nom par rapport à un nom donnée et pas que par ID
      *
      * @author : Jules
      */
@@ -513,7 +511,6 @@ class PlateformMenus(
     /**
      * Fonction gérant l'entrée du nom de l'ami à chercher et affichant le résultat
      *
-     * TODO : Affichage du résultat de la recherche
      * @return None
      *
      * @author Jules
@@ -708,16 +705,12 @@ class PlateformMenus(
 
         if(accountConnected!=null){
             // Bouton avec actions
-            val btnBuy = Button("Acheter le jeu"){
-                log.info("Acheter le jeu")
-                window.close()
-            }
+
             val btnWishList = Button("Ajouter à la liste de souhaits"){
                 log.info("Ajout liste de souhait")
                 window.close()
             }
 
-            panel.addComponent(btnBuy)
             // Permet de mettre les boutons les uns en dessous des autres en occupant la seconde colonnes
             panel.addComponent(EmptySpace())
             panel.addComponent(btnWishList)
