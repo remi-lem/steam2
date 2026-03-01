@@ -213,6 +213,8 @@ class PlateformMenus(
                     date_naissance = LocalDateTime.of(year, month, day, 12,0)
                     date_creation = LocalDateTime.now()
                     plateforme = playerPlateform
+                    password = Hashing.sha256()
+                        .hashString(txtPassword1.text, StandardCharsets.UTF_8).toString()
                 }
 
                 try {
@@ -279,8 +281,7 @@ class PlateformMenus(
         gui.addWindowAndWait(window)
     }
 
-    fun login(): Joueur? {
-        var accountConnected:Joueur? = null
+    fun login(){
 
         val window = BasicWindow("Authentification")
         val panel = Panel(GridLayout(2))
@@ -304,9 +305,11 @@ class PlateformMenus(
                 .hashString(txtPassword.text, StandardCharsets.UTF_8)
                 .toString()
             try {
-                // val editeur = joueurDAO.identifier(txtLogin.text, sha256hex)
-                 // accountConnected = editeur
+                log.info("Essai de connexion pour ${txtLogin.text}")
+                val joueur = joueurDAO.identifier(txtLogin.text.toString(), sha256hex)
+                accountConnected = joueur
                 window.close()
+
             } catch (e: LoginException) {
                 MessageDialog.showMessageDialog(gui, "Erreur", "Login ou mot de passe incorrect")
             }
@@ -314,8 +317,6 @@ class PlateformMenus(
         panel.addComponent(btnOK)
         window.component = panel
         gui.addWindowAndWait(window)
-
-        return Joueur()
     }
 
     /**

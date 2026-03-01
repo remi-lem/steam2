@@ -58,11 +58,11 @@ fun main() = runBlocking {
     val inputStreamJoueurs = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka/joueurs.properties")
     propsJoueursKafka.load(inputStreamCommonJoueurs)
     propsJoueursKafka.load(inputStreamJoueurs)
-    val topicJoueurs = propsJeuxKafka.getProperty("topic.name")
+    val topicJoueurs = propsJoueursKafka.getProperty("topic.name")
 
 
-    val consumerJoueurs = KafkaConsumer<String, GenericRecord>(propsJeuxKafka)
-    consumerJoueurs.subscribe(listOf(topicJeux))
+    val consumerJoueurs = KafkaConsumer<String, GenericRecord>(propsJoueursKafka)
+    consumerJoueurs.subscribe(listOf(topicJoueurs))
 
     val propsCommentairesKafka = Properties()
     val inputStreamCommonCommentaires = Thread.currentThread().contextClassLoader.getResourceAsStream("kafka.properties")

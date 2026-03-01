@@ -172,6 +172,7 @@ CREATE TABLE joueur (
     plateforme VARCHAR(50) NOT NULL,
     nom VARCHAR(50) NOT NULL,
     prenom VARCHAR(50) NOT NULL,
+    password CHAR(64) NOT NULL, -- hash sha256
     date_naissance DATETIME NOT NULL,
     date_creation DATETIME NOT NULL
 );
@@ -233,7 +234,6 @@ VALUES ('INDEPENDANT',
         'remiCorp'
        );
 
-INSERT INTO `joueur` (`username`, `nom`, `prenom`, `plateforme`, `date_naissance`, `date_creation`) VALUES ( 'nino', 'keravel', 'nino', 'LINUX', '2004-05-04 22:54:16', '2026-02-26 21:54:16.000000');
 
 
 -- CREATION DES TABLES POUR LE CLIENT
@@ -293,6 +293,7 @@ CREATE TABLE joueur (
     prenom VARCHAR(50) NOT NULL,
 	solde DECIMAL(5,2) NOT NULL CHECK (solde>=0),
     date_naissance DATETIME NOT NULL,
+    plateforme VARCHAR(50) NOT NULL,
 	date_creation DATETIME NOT NULL
 );
 

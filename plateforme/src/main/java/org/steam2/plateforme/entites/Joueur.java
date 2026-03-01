@@ -37,10 +37,8 @@ public class Joueur {
     @Column(name="plateforme")
     private Plateforme plateforme;
 
-    /*
     @Column(name="password")
     private String password;
-*/
 
     @OneToMany(mappedBy = "joueur",fetch = FetchType.LAZY)
     private List<JeuJoueur> bibliotheque;

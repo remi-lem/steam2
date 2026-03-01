@@ -31,7 +31,7 @@ class RecupJoueurs (
         try{
             while(isRunning){
                 val records = consumer.poll(Duration.ofMillis(DELAI_ATTENTE))
-                records.isEmpty
+                log.info("essaie de recuperer un nouveau joueur... : ${records.isEmpty}")
                 for (record in records){
                     log.info("Nouveau joueur reçu : ${record.value()}")
                     val genericJoueur: GenericRecord = record.value()

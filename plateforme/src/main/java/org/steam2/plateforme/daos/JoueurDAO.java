@@ -36,35 +36,30 @@ public class JoueurDAO {
     /**
      * Authentification d'un joueur
      * @param username login de l'éditeur
-     * @param hashPassword mot de passe haché
+     * @param passhash mot de passe haché
      * @return l'éditeur identifié
      * @author Jules
      */
-    public Joueur identifier(String username, String hashPassword) {
-        try (EntityManager em = emf.createEntityManager()) {
+    public Joueur identifier(String username, String passhash) throws LoginException {
+        try (EntityManager em = emf.createEntityManager()){
             TypedQuery<Joueur> q = em.createQuery(
-                    "SELECT e FROM Joueur e WHERE 'username' = :username", Joueur.class);
+                    "SELECT e FROM Joueur e WHERE e.username = :username", Joueur.class);
             q.setParameter("username", username);
 
             List<Joueur> resultats = q.getResultList();
 
             if (resultats.isEmpty()) {
-                throw new LoginException("Aucun éditeur trouvé avec le nom : " + username);
+                throw new LoginException("Aucun aucun joueur trouvé avec le nom : " + username);
             }
 
             Joueur e = resultats.getFirst();
 
-            // TODO : Finir la requête de connexion
-            /*
-            if (e..equals(hashPassword)) {
+            if (e.getPassword().equals(passhash)) {
                 return e;
             } else {
-                throw new LoginException("Mot de passe incorrect pour l'éditeur " + nom);
+                throw new LoginException("Mot de passe incorrect pour le joueur " + username);
             }
-             */
-            return e;
-        } catch (LoginException e) {
-            throw new RuntimeException(e);
+
         }
     }
 
